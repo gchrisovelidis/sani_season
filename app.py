@@ -17,14 +17,6 @@ st.set_page_config(
     layout="wide",
 )
 
-# Auto-refresh every second
-st.markdown(
-    """
-    <meta http-equiv="refresh" content="1">
-    """,
-    unsafe_allow_html=True,
-)
-
 # -----------------------
 # Styling
 # -----------------------
@@ -36,17 +28,23 @@ st.markdown(
             padding-bottom: 1.2rem;
             padding-left: 2rem;
             padding-right: 2rem;
-            max-width: 1000px;
+            max-width: 1100px;
         }
 
         .logo-wrap {
             margin-bottom: 2.5rem;
         }
 
+        .center-wrap {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
         .label {
             font-size: 1rem;
             color: #6b7280;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.25rem;
             font-weight: 500;
         }
 
@@ -92,7 +90,6 @@ today = now.date()
 current_time = now.time().replace(microsecond=0)
 
 days_remaining = (TARGET_DATE - today).days
-
 show_countdown = START_SHOW_TIME <= current_time <= END_SHOW_TIME
 
 if show_countdown:
@@ -114,6 +111,8 @@ if logo_file.exists():
     st.image(str(logo_file), width=220)
     st.markdown("</div>", unsafe_allow_html=True)
 
+st.markdown('<div class="center-wrap">', unsafe_allow_html=True)
+
 st.markdown('<div class="label">Current time</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="clock">{now.strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
 
@@ -123,3 +122,5 @@ if show_countdown:
 
 st.markdown('<div class="label">Days until 30 October 2026</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="days">{days_remaining} days</div>', unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
