@@ -1,7 +1,9 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from datetime import datetime, date, time
 from zoneinfo import ZoneInfo
 from pathlib import Path
+import base64
 
 # -----------------------
 # Config
@@ -15,72 +17,17 @@ LOGO_PATH = "logo.png"
 st.set_page_config(
     page_title="Sani Season",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 # -----------------------
-# Styling
+# Helpers
 # -----------------------
-st.markdown(
-    """
-    <style>
-        .block-container {
-            padding-top: 1.2rem;
-            padding-bottom: 1.2rem;
-            padding-left: 2rem;
-            padding-right: 2rem;
-            max-width: 1100px;
-        }
-
-        .logo-wrap {
-            margin-bottom: 2.5rem;
-        }
-
-        .center-wrap {
-            max-width: 700px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .label {
-            font-size: 1rem;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
-            font-weight: 500;
-        }
-
-        .clock {
-            font-size: 5rem;
-            font-weight: 700;
-            line-height: 1.05;
-            margin-bottom: 2rem;
-        }
-
-        .countdown {
-            font-size: 4rem;
-            font-weight: 700;
-            line-height: 1.05;
-            margin-bottom: 2rem;
-        }
-
-        .days {
-            font-size: 4rem;
-            font-weight: 700;
-            line-height: 1.05;
-        }
-
-        @media (max-width: 768px) {
-            .clock {
-                font-size: 3.2rem;
-            }
-
-            .countdown, .days {
-                font-size: 2.5rem;
-            }
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+def get_logo_base64(path: str) -> str:
+    file_path = Path(path)
+    if not file_path.exists():
+        return ""
+    return base64.b64encode(file_path.read_bytes()).decode()
 
 # -----------------------
 # Time calculations
@@ -92,35 +39,138 @@ current_time = now.time().replace(microsecond=0)
 days_remaining = (TARGET_DATE - today).days
 show_countdown = START_SHOW_TIME <= current_time <= END_SHOW_TIME
 
+countdown_html = ""
 if show_countdown:
     target_dt = datetime.combine(today, END_SHOW_TIME, tzinfo=ZoneInfo(TIMEZONE))
     remaining = target_dt - now
-
     total_seconds = max(int(remaining.total_seconds()), 0)
     hours = total_seconds // 3600
     minutes = (total_seconds % 3600) // 60
-
     countdown_text = f"{hours}h {minutes:02d}m"
 
-# -----------------------
-# UI
-# -----------------------
-logo_file = Path(LOGO_PATH)
-if logo_file.exists():
-    st.markdown('<div class="logo-wrap">', unsafe_allow_html=True)
-    st.image(str(logo_file), width=220)
-    st.markdown("</div>", unsafe_allow_html=True)
+    countdown_html = f"""
+        <div class="label">Time until 17:30</div>
+        <div class="countdown">{countdown_text}</div>
+    """
 
-st.markdown('<div class="center-wrap">', unsafe_allow_html=True)
+logo_html = ""
+logo_b64 = get_logo_base64(LOGO_PATH)
+if logo_b64:
+    logo_html = f"""
+        <div class="logo">
+            <img src="data:image/png;base64,{logo_b64}" alt="Logo">
+        </div>
+    """
 
-st.markdown('<div class="label">Current time</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="clock">{now.strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
+html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        html, body {{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: white;
+            font-family: Arial, Helvetica, sans-serif;
+        }}
 
-if show_countdown:
-    st.markdown('<div class="label">Time until 17:30</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="countdown">{countdown_text}</div>', unsafe_allow_html=True)
+        .page {{
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }}
 
-st.markdown('<div class="label">Days until 30 October 2026</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="days">{days_remaining} days</div>', unsafe_allow_html=True)
+        .content {{
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }}
 
-st.markdown("</div>", unsafe_allow_html=True)
+        .logo {{
+            margin-bottom: 24px;
+        }}
+
+        .logo img {{
+            width: 230px;
+            max-width: 60vw;
+            height: auto;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }}
+
+        .label {{
+            font-size: 18px;
+            color: #5f6675;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }}
+
+        .clock {{
+            font-size: 102px;
+            font-weight: 700;
+            line-height: 1;
+            color: #2f3345;
+            margin-bottom: 28px;
+        }}
+
+        .countdown {{
+            font-size: 72px;
+            font-weight: 700;
+            line-height: 1;
+            color: #2f3345;
+            margin-bottom: 28px;
+        }}
+
+        .days {{
+            font-size: 72px;
+            font-weight: 700;
+            line-height: 1;
+            color: #2f3345;
+            margin-bottom: 0;
+        }}
+
+        @media (max-width: 768px) {{
+            .logo img {{
+                width: 180px;
+            }}
+
+            .clock {{
+                font-size: 72px;
+            }}
+
+            .countdown, .days {{
+                font-size: 48px;
+            }}
+
+            .label {{
+                font-size: 16px;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="content">
+            {logo_html}
+            <div class="label">Current time</div>
+            <div class="clock">{now.strftime("%H:%M")}</div>
+            {countdown_html}
+            <div class="label">Days until 30 October 2026</div>
+            <div class="days">{days_remaining} days</div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+components.html(html, height=500, scrolling=False)
