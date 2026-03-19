@@ -77,15 +77,6 @@ def get_weather_for_city(query: str) -> dict:
 
         return {"temp": f"{temp}°C", "weather": weather}
 
-    except:
-        return {"temp": "—", "weather": "Unavailable"}
-
-    except Exception as e:
-        return {"temp": "—", "weather": str(e)}
-
-        temp = round(data["main"]["temp"])
-        weather = data["weather"][0]["main"]
-        return {"temp": f"{temp}°C", "weather": weather}
     except Exception:
         return {"temp": "—", "weather": "Unavailable"}
 
@@ -354,42 +345,35 @@ html = f"""
             }}
         }}
 
-        @media (max-width: 768px) {{
-            .page {{
+        @media (max-width: 768px) {
+            .page {
                 flex-direction: column;
-            }}
+            }
 
-            .left, .center {{
+            .left, .center {
                 width: 100%;
-            }}
+            }
 
-            .left {{
+            .left {
                 padding: 20px;
-            }}
+            }
 
-            .center {{
+            .center {
                 padding: 10px 20px 20px 20px;
-            }}
+            }
 
-            .logo img {{
+            .logo img {
                 width: 180px;
-            }}
+            }
 
-            .clock {{
+            .clock {
                 font-size: 64px;
-            }}
+            }
 
-            .countdown, .days {{
+            .countdown, .days {
                 font-size: 42px;
-            }}
-
-            .office-row .weather-city {{
-                font-size: 20px;
-            }}
-
-            .office-row .weather-temp {{
-                font-size: 24px;
-            }}
+            }
+        }
         }}
     </style>
 </head>
