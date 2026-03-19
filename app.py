@@ -298,7 +298,7 @@ html = f"""
         }}
 
         .clock {{
-            font-size: 100px;
+            font-size: 70px;
             font-weight: 700;
             line-height: 1;
             margin-bottom: 25px;
@@ -393,7 +393,7 @@ html = f"""
             }}
 
             .clock {{
-                font-size: 64px;
+                font-size: 42px;
             }}
 
             .countdown, .days {{
