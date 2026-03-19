@@ -58,6 +58,26 @@ def get_logo_base64(path: str) -> str:
         return ""
     return base64.b64encode(file_path.read_bytes()).decode()
 
+def get_weather_icon(weather: str) -> str:
+    mapping = {
+        "Clear": "☀️",
+        "Clouds": "☁️",
+        "Rain": "🌧",
+        "Drizzle": "🌦",
+        "Thunderstorm": "⛈",
+        "Snow": "❄️",
+        "Mist": "🌫",
+        "Fog": "🌫",
+        "Haze": "🌫",
+        "Smoke": "🌫",
+        "Dust": "🌫",
+        "Sand": "🌫",
+        "Ash": "🌫",
+        "Squall": "🌬",
+        "Tornado": "🌪",
+    }
+    return mapping.get(weather, "🌤")
+
 def get_weather_for_city(query: str) -> dict:
     try:
         url = "https://api.openweathermap.org/data/2.5/weather"
@@ -69,19 +89,17 @@ def get_weather_for_city(query: str) -> dict:
         response = requests.get(url, params=params, timeout=10)
         data = response.json()
 
-        st.write("Weather status:", response.status_code)
-        st.write("Weather message:", data.get("message", "ok"))
-
         if response.status_code != 200:
-            return {"temp": "—", "weather": "Unavailable"}
+            return {"temp": "—", "weather": "Unavailable", "icon": "•"}
 
         temp = round(data["main"]["temp"])
         weather = data["weather"][0]["main"]
-        return {"temp": f"{temp}°C", "weather": weather}
+        icon = get_weather_icon(weather)
 
-    except Exception as e:
-        st.write("Weather exception:", str(e))
-        return {"temp": "—", "weather": "Unavailable"}
+        return {"temp": f"{temp}°C", "weather": weather, "icon": icon}
+
+    except Exception:
+        return {"temp": "—", "weather": "Unavailable", "icon": "•"}
 
 def render_weather_rows(locations: dict, office: bool = False) -> str:
     rows = []
@@ -92,7 +110,7 @@ def render_weather_rows(locations: dict, office: bool = False) -> str:
             <div class="{row_class}">
                 <div class="weather-left">
                     <div class="weather-city">{label}</div>
-                    <div class="weather-condition">{info["weather"]}</div>
+                    <div class="weather-condition">{info["icon"]} {info["weather"]}</div>
                 </div>
                 <div class="weather-temp">{info["temp"]}</div>
             </div>
@@ -167,6 +185,9 @@ html = f"""
 <head>
     <meta http-equiv="refresh" content="60">
     <meta charset="utf-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         html, body {{
             margin: 0;
@@ -174,7 +195,7 @@ html = f"""
             height: 100%;
             overflow: hidden;
             background: white;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Inter', Arial, Helvetica, sans-serif;
             color: #2f3345;
         }}
 
@@ -256,13 +277,13 @@ html = f"""
         }}
 
         .weather-condition {{
-            font-size: 14px;
+            font-size: 13px;
             color: #7a8190;
-            margin-top: 2px;
+            margin-top: 3px;
         }}
 
         .weather-temp {{
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             line-height: 1.1;
             white-space: nowrap;
