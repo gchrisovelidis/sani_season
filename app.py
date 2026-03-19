@@ -25,7 +25,7 @@ TIMEZONE = "Europe/Athens"
 LOGO_PATH = "logo.png"
 
 # 👉 ADD YOUR API KEY HERE
-API_KEY = "3d688fbda879b3f76bc98c248dfcd652"
+API_KEY = st.secrets["API_KEY"]
 
 CITY = "Thessaloniki,GR"
 
