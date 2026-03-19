@@ -42,7 +42,7 @@ OFFICE_LOCATIONS = {
 
 PROPERTY_LOCATIONS = {
     "Halkidiki": "Polygyros,GR",
-    "Corfu": "Corfu,GR",
+    "Corfu": "Kerkyra,GR",
     "Kos": "Kos,GR",
     "Crete": "Heraklion,GR",
     "Marbella": "Marbella,ES",
@@ -69,6 +69,9 @@ def get_weather_for_city(query: str) -> dict:
         response = requests.get(url, params=params, timeout=10)
         data = response.json()
 
+        st.write("Weather status:", response.status_code)
+        st.write("Weather message:", data.get("message", "ok"))
+
         if response.status_code != 200:
             return {"temp": "—", "weather": "Unavailable"}
 
@@ -76,7 +79,8 @@ def get_weather_for_city(query: str) -> dict:
         weather = data["weather"][0]["main"]
         return {"temp": f"{temp}°C", "weather": weather}
 
-    except Exception:
+    except Exception as e:
+        st.write("Weather exception:", str(e))
         return {"temp": "—", "weather": "Unavailable"}
 
 def render_weather_rows(locations: dict, office: bool = False) -> str:
