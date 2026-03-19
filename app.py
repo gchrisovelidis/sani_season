@@ -74,7 +74,6 @@ def get_weather_for_city(query: str) -> dict:
 
         temp = round(data["main"]["temp"])
         weather = data["weather"][0]["main"]
-
         return {"temp": f"{temp}°C", "weather": weather}
 
     except Exception:
@@ -128,9 +127,9 @@ elapsed_days = (today - SEASON_START).days
 progress = max(0, min(100, int((elapsed_days / total_days) * 100))) if total_days > 0 else 0
 
 progress_bar = f"""
-<div class="progress-section">
-    <div class="section-title">Season Progress</div>
-    <div class="progress-bar">
+<div class="center-progress">
+    <div class="label">Season Progress</div>
+    <div class="progress-bar center-progress-bar">
         <div class="progress-fill" style="width:{progress}%"></div>
     </div>
     <div class="progress-text">{progress}%</div>
@@ -183,8 +182,8 @@ html = f"""
         }}
 
         .left {{
-            width: 35%;
-            padding: 28px 30px 24px 36px;
+            width: 34%;
+            padding: 24px 28px 20px 32px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -192,7 +191,7 @@ html = f"""
         }}
 
         .center {{
-            width: 65%;
+            width: 66%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -202,6 +201,8 @@ html = f"""
 
         .content {{
             text-align: center;
+            width: 100%;
+            max-width: 760px;
         }}
 
         .logo {{
@@ -218,7 +219,7 @@ html = f"""
         }}
 
         .section {{
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }}
 
         .section-title {{
@@ -230,14 +231,7 @@ html = f"""
             margin-bottom: 12px;
         }}
 
-        .office-row {{
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
-            margin-bottom: 8px;
-        }}
-
+        .office-row,
         .weather-row {{
             display: flex;
             justify-content: space-between;
@@ -271,31 +265,6 @@ html = f"""
             color: #2f3345;
         }}
 
-        .progress-section {{
-            margin-top: 6px;
-        }}
-
-        .progress-bar {{
-            width: 100%;
-            height: 14px;
-            background: #eceef2;
-            border-radius: 999px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }}
-
-        .progress-fill {{
-            height: 100%;
-            background: #2f3345;
-            border-radius: 999px;
-        }}
-
-        .progress-text {{
-            font-size: 16px;
-            font-weight: 700;
-            color: #2f3345;
-        }}
-
         .label {{
             font-size: 18px;
             color: #5f6675;
@@ -324,16 +293,48 @@ html = f"""
             font-weight: 700;
             line-height: 1;
             color: #2f3345;
+            margin-bottom: 24px;
+        }}
+
+        .center-progress {{
+            width: 100%;
+            max-width: 520px;
+            margin: 0 auto;
+        }}
+
+        .progress-bar {{
+            width: 100%;
+            height: 14px;
+            background: #eceef2;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }}
+
+        .center-progress-bar {{
+            margin-top: 2px;
+        }}
+
+        .progress-fill {{
+            height: 100%;
+            background: #2f3345;
+            border-radius: 999px;
+        }}
+
+        .progress-text {{
+            font-size: 16px;
+            font-weight: 700;
+            color: #2f3345;
         }}
 
         @media (max-width: 1100px) {{
             .left {{
-                width: 35%;
-                padding: 24px;
+                width: 36%;
+                padding: 22px;
             }}
 
             .center {{
-                width: 62%;
+                width: 64%;
             }}
 
             .clock {{
@@ -345,35 +346,34 @@ html = f"""
             }}
         }}
 
-        @media (max-width: 768px) {
-            .page {
+        @media (max-width: 768px) {{
+            .page {{
                 flex-direction: column;
-            }
+            }}
 
-            .left, .center {
+            .left, .center {{
                 width: 100%;
-            }
+            }}
 
-            .left {
+            .left {{
                 padding: 20px;
-            }
+            }}
 
-            .center {
+            .center {{
                 padding: 10px 20px 20px 20px;
-            }
+            }}
 
-            .logo img {
+            .logo img {{
                 width: 180px;
-            }
+            }}
 
-            .clock {
+            .clock {{
                 font-size: 64px;
-            }
+            }}
 
-            .countdown, .days {
+            .countdown, .days {{
                 font-size: 42px;
-            }
-        }
+            }}
         }}
     </style>
 </head>
@@ -389,8 +389,6 @@ html = f"""
                 <div class="section-title">Weather in our properties</div>
                 {property_weather_html}
             </div>
-
-            {progress_bar}
         </div>
 
         <div class="center">
@@ -401,6 +399,7 @@ html = f"""
                 {countdown_html}
                 <div class="label">Days until 7 November 2026</div>
                 <div class="days">{days_remaining} days</div>
+                {progress_bar}
             </div>
         </div>
     </div>
