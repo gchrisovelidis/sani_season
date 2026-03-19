@@ -70,14 +70,15 @@ def get_weather_for_city(query: str) -> dict:
         data = response.json()
 
         if response.status_code != 200:
-            return {
-                "temp": "—",
-                "weather": data.get("message", "Unavailable")
-            }
+            return {"temp": "—", "weather": "Unavailable"}
 
         temp = round(data["main"]["temp"])
         weather = data["weather"][0]["main"]
+
         return {"temp": f"{temp}°C", "weather": weather}
+
+    except:
+        return {"temp": "—", "weather": "Unavailable"}
 
     except Exception as e:
         return {"temp": "—", "weather": str(e)}
@@ -226,7 +227,7 @@ html = f"""
         }}
 
         .section {{
-            margin-bottom: 28px;
+            margin-bottom: 20px;
         }}
 
         .section-title {{
@@ -251,7 +252,7 @@ html = f"""
             justify-content: space-between;
             align-items: flex-start;
             gap: 16px;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }}
 
         .weather-left {{
@@ -259,25 +260,16 @@ html = f"""
         }}
 
         .weather-city {{
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
             line-height: 1.2;
             color: #2f3345;
         }}
 
-        .office-row .weather-city {{
-            font-size: 24px;
-            font-weight: 700;
-        }}
-
         .weather-condition {{
             font-size: 14px;
             color: #7a8190;
-            margin-top: 3px;
-        }}
-
-        .office-row .weather-condition {{
-            font-size: 15px;
+            margin-top: 2px;
         }}
 
         .weather-temp {{
@@ -288,12 +280,8 @@ html = f"""
             color: #2f3345;
         }}
 
-        .office-row .weather-temp {{
-            font-size: 28px;
-        }}
-
         .progress-section {{
-            margin-top: 10px;
+            margin-top: 6px;
         }}
 
         .progress-bar {{
@@ -349,7 +337,7 @@ html = f"""
 
         @media (max-width: 1100px) {{
             .left {{
-                width: 38%;
+                width: 35%;
                 padding: 24px;
             }}
 
