@@ -70,7 +70,17 @@ def get_weather_for_city(query: str) -> dict:
         data = response.json()
 
         if response.status_code != 200:
-            return {"temp": "—", "weather": "Unavailable"}
+            return {
+                "temp": "—",
+                "weather": data.get("message", "Unavailable")
+            }
+
+        temp = round(data["main"]["temp"])
+        weather = data["weather"][0]["main"]
+        return {"temp": f"{temp}°C", "weather": weather}
+
+    except Exception as e:
+        return {"temp": "—", "weather": str(e)}
 
         temp = round(data["main"]["temp"])
         weather = data["weather"][0]["main"]
@@ -426,4 +436,4 @@ html = f"""
 </html>
 """
 
-components.html(html, height=500, scrolling=False)
+components.html(html, height=700, scrolling=False)
