@@ -50,19 +50,19 @@ def get_logo_base64(path: str) -> str:
 def get_weather():
     try:
         url = f"https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         data = response.json()
 
-        # Debug print (you can remove later)
-        print(data)
-
         if response.status_code != 200:
-            return "Weather unavailable"
+            return f"Error: {data.get('message', 'unknown')}"
 
         temp = round(data["main"]["temp"])
         weather = data["weather"][0]["main"]
 
         return f"{temp}°C | {weather}"
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 
     except Exception as e:
         print(e)
