@@ -6,11 +6,21 @@ from pathlib import Path
 import base64
 import requests
 
+st.set_page_config(
+    page_title="Sani Season",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
+
 st.markdown("""
 <style>
 footer {visibility: hidden;}
 header {visibility: hidden;}
 #MainMenu {visibility: hidden;}
+.block-container {
+    padding: 0 !important;
+    max-width: 100% !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -24,16 +34,20 @@ END_SHOW_TIME = time(17, 30)
 TIMEZONE = "Europe/Athens"
 LOGO_PATH = "logo.png"
 
-# 👉 ADD YOUR API KEY HERE
 API_KEY = st.secrets["API_KEY"]
 
-CITY = "Thessaloniki,GR"
+OFFICE_LOCATIONS = {
+    "Thessaloniki": "Thessaloniki,GR",
+}
 
-st.set_page_config(
-    page_title="Sani Season",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
+PROPERTY_LOCATIONS = {
+    "Halkidiki": "Polygyros,GR",
+    "Corfu": "Corfu,GR",
+    "Kos": "Kos,GR",
+    "Crete": "Heraklion,GR",
+    "Marbella": "Marbella,ES",
+    "Mallorca": "Palma,ES",
+}
 
 # -----------------------
 # Helpers
@@ -44,31 +58,41 @@ def get_logo_base64(path: str) -> str:
         return ""
     return base64.b64encode(file_path.read_bytes()).decode()
 
-# -----------------------
-# Weather
-# -----------------------
-def get_weather():
+def get_weather_for_city(query: str) -> dict:
     try:
-        url = f"https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
-        response = requests.get(url, timeout=10)
+        url = "https://api.openweathermap.org/data/2.5/weather"
+        params = {
+            "q": query,
+            "appid": API_KEY,
+            "units": "metric",
+        }
+        response = requests.get(url, params=params, timeout=10)
         data = response.json()
 
         if response.status_code != 200:
-            return f"Error: {data.get('message', 'unknown')}"
+            return {"temp": "—", "weather": "Unavailable"}
 
         temp = round(data["main"]["temp"])
         weather = data["weather"][0]["main"]
+        return {"temp": f"{temp}°C", "weather": weather}
+    except Exception:
+        return {"temp": "—", "weather": "Unavailable"}
 
-        return f"{temp}°C | {weather}"
-
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-    except Exception as e:
-        print(e)
-        return "—"
-
-weather_text = get_weather()
+def render_weather_rows(locations: dict, office: bool = False) -> str:
+    rows = []
+    for label, query in locations.items():
+        info = get_weather_for_city(query)
+        row_class = "office-row" if office else "weather-row"
+        rows.append(f"""
+            <div class="{row_class}">
+                <div class="weather-left">
+                    <div class="weather-city">{label}</div>
+                    <div class="weather-condition">{info["weather"]}</div>
+                </div>
+                <div class="weather-temp">{info["temp"]}</div>
+            </div>
+        """)
+    return "".join(rows)
 
 # -----------------------
 # Time calculations
@@ -99,14 +123,16 @@ if show_countdown:
 # -----------------------
 total_days = (TARGET_DATE - SEASON_START).days
 elapsed_days = (today - SEASON_START).days
-progress = max(0, min(100, int((elapsed_days / total_days) * 100)))
+progress = max(0, min(100, int((elapsed_days / total_days) * 100))) if total_days > 0 else 0
 
 progress_bar = f"""
-<div class="progress-label">Season Progress</div>
-<div class="progress-bar">
-    <div class="progress-fill" style="width:{progress}%"></div>
+<div class="progress-section">
+    <div class="section-title">Season Progress</div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width:{progress}%"></div>
+    </div>
+    <div class="progress-text">{progress}%</div>
 </div>
-<div class="progress-text">{progress}%</div>
 """
 
 # -----------------------
@@ -122,130 +148,282 @@ if logo_b64:
     """
 
 # -----------------------
+# Weather HTML
+# -----------------------
+office_weather_html = render_weather_rows(OFFICE_LOCATIONS, office=True)
+property_weather_html = render_weather_rows(PROPERTY_LOCATIONS, office=False)
+
+# -----------------------
 # HTML
 # -----------------------
 html = f"""
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="refresh" content="60">
-<meta charset="utf-8">
-<style>
+    <meta http-equiv="refresh" content="60">
+    <meta charset="utf-8">
+    <style>
+        html, body {{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: white;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #2f3345;
+        }}
 
-html, body {{
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    background: white;
-    font-family: Arial;
-}}
+        .page {{
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            background: white;
+        }}
 
-.page {{
-    display: flex;
-    height: 100vh;
-}}
+        .left {{
+            width: 35%;
+            padding: 28px 30px 24px 36px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }}
 
-.left {{
-    width: 30%;
-    padding: 40px;
-}}
+        .center {{
+            width: 65%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            box-sizing: border-box;
+        }}
 
-.center {{
-    width: 70%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}}
+        .content {{
+            text-align: center;
+        }}
 
-.content {{
-    text-align: center;
-}}
+        .logo {{
+            margin-bottom: 18px;
+        }}
 
-.logo img {{
-    width: 220px;
-    margin-bottom: 20px;
-}}
+        .logo img {{
+            width: 220px;
+            max-width: 60vw;
+            height: auto;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }}
 
-.weather {{
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 40px;
-}}
+        .section {{
+            margin-bottom: 28px;
+        }}
 
-.progress-label {{
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 10px;
-}}
+        .section-title {{
+            font-size: 13px;
+            font-weight: 700;
+            color: #7a8190;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 12px;
+        }}
 
-.progress-bar {{
-    width: 100%;
-    height: 14px;
-    background: #eee;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}}
+        .office-row {{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 8px;
+        }}
 
-.progress-fill {{
-    height: 100%;
-    background: #2f3345;
-}}
+        .weather-row {{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 10px;
+        }}
 
-.progress-text {{
-    font-size: 16px;
-    font-weight: 600;
-}}
+        .weather-left {{
+            text-align: left;
+        }}
 
-.label {{
-    font-size: 18px;
-    color: #5f6675;
-    margin-bottom: 10px;
-}}
+        .weather-city {{
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.2;
+            color: #2f3345;
+        }}
 
-.clock {{
-    font-size: 100px;
-    font-weight: 700;
-    margin-bottom: 25px;
-}}
+        .office-row .weather-city {{
+            font-size: 24px;
+            font-weight: 700;
+        }}
 
-.countdown {{
-    font-size: 70px;
-    font-weight: 700;
-    margin-bottom: 25px;
-}}
+        .weather-condition {{
+            font-size: 14px;
+            color: #7a8190;
+            margin-top: 3px;
+        }}
 
-.days {{
-    font-size: 70px;
-    font-weight: 700;
-}}
+        .office-row .weather-condition {{
+            font-size: 15px;
+        }}
 
-</style>
+        .weather-temp {{
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.1;
+            white-space: nowrap;
+            color: #2f3345;
+        }}
+
+        .office-row .weather-temp {{
+            font-size: 28px;
+        }}
+
+        .progress-section {{
+            margin-top: 10px;
+        }}
+
+        .progress-bar {{
+            width: 100%;
+            height: 14px;
+            background: #eceef2;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }}
+
+        .progress-fill {{
+            height: 100%;
+            background: #2f3345;
+            border-radius: 999px;
+        }}
+
+        .progress-text {{
+            font-size: 16px;
+            font-weight: 700;
+            color: #2f3345;
+        }}
+
+        .label {{
+            font-size: 18px;
+            color: #5f6675;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }}
+
+        .clock {{
+            font-size: 100px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 25px;
+            color: #2f3345;
+        }}
+
+        .countdown {{
+            font-size: 70px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 25px;
+            color: #2f3345;
+        }}
+
+        .days {{
+            font-size: 70px;
+            font-weight: 700;
+            line-height: 1;
+            color: #2f3345;
+        }}
+
+        @media (max-width: 1100px) {{
+            .left {{
+                width: 38%;
+                padding: 24px;
+            }}
+
+            .center {{
+                width: 62%;
+            }}
+
+            .clock {{
+                font-size: 82px;
+            }}
+
+            .countdown, .days {{
+                font-size: 56px;
+            }}
+        }}
+
+        @media (max-width: 768px) {{
+            .page {{
+                flex-direction: column;
+            }}
+
+            .left, .center {{
+                width: 100%;
+            }}
+
+            .left {{
+                padding: 20px;
+            }}
+
+            .center {{
+                padding: 10px 20px 20px 20px;
+            }}
+
+            .logo img {{
+                width: 180px;
+            }}
+
+            .clock {{
+                font-size: 64px;
+            }}
+
+            .countdown, .days {{
+                font-size: 42px;
+            }}
+
+            .office-row .weather-city {{
+                font-size: 20px;
+            }}
+
+            .office-row .weather-temp {{
+                font-size: 24px;
+            }}
+        }}
+    </style>
 </head>
-
 <body>
-<div class="page">
+    <div class="page">
+        <div class="left">
+            <div class="section">
+                <div class="section-title">Weather in our offices</div>
+                {office_weather_html}
+            </div>
 
-    <div class="left">
-        <div class="weather">🌤 {weather_text}</div>
-        {progress_bar}
-    </div>
+            <div class="section">
+                <div class="section-title">Weather in our properties</div>
+                {property_weather_html}
+            </div>
 
-    <div class="center">
-        <div class="content">
-            {logo_html}
-            <div class="label">Current time</div>
-            <div class="clock">{now.strftime("%H:%M")}</div>
-            {countdown_html}
-            <div class="label">Days until 7 November 2026</div>
-            <div class="days">{days_remaining} days</div>
+            {progress_bar}
+        </div>
+
+        <div class="center">
+            <div class="content">
+                {logo_html}
+                <div class="label">Current time</div>
+                <div class="clock">{now.strftime("%H:%M")}</div>
+                {countdown_html}
+                <div class="label">Days until 7 November 2026</div>
+                <div class="days">{days_remaining} days</div>
+            </div>
         </div>
     </div>
-
-</div>
 </body>
 </html>
 """
-st.write(weather_text)
+
 components.html(html, height=500, scrolling=False)
