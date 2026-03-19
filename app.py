@@ -27,7 +27,7 @@ LOGO_PATH = "logo.png"
 # 👉 ADD YOUR API KEY HERE
 API_KEY = "3d688fbda879b3f76bc98c248dfcd652"
 
-CITY = "Nea Erythraia,GR"
+CITY = "Thessaloniki,GR"
 
 st.set_page_config(
     page_title="Sani Season",
@@ -50,13 +50,22 @@ def get_logo_base64(path: str) -> str:
 def get_weather():
     try:
         url = f"https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
-        response = requests.get(url).json()
+        response = requests.get(url)
+        data = response.json()
 
-        temp = round(response["main"]["temp"])
-        weather = response["weather"][0]["main"]
+        # Debug print (you can remove later)
+        print(data)
+
+        if response.status_code != 200:
+            return "Weather unavailable"
+
+        temp = round(data["main"]["temp"])
+        weather = data["weather"][0]["main"]
 
         return f"{temp}°C | {weather}"
-    except:
+
+    except Exception as e:
+        print(e)
         return "—"
 
 weather_text = get_weather()
@@ -238,5 +247,5 @@ html, body {{
 </body>
 </html>
 """
-
+st.write(weather_text)
 components.html(html, height=500, scrolling=False)
