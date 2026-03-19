@@ -258,7 +258,6 @@ def get_next_holiday(today_: date):
 
 
 def get_weekend_indicator(today_: date):
-    # Monday=0 ... Sunday=6
     weekday = today_.weekday()
 
     if weekday >= 5:
@@ -269,11 +268,23 @@ def get_weekend_indicator(today_: date):
             "is_weekend": True,
         }
 
-    days_to_saturday = 5 - weekday
+    # FIX: don't count today
+    days_to_saturday = (5 - weekday)
+
+    # Adjust for UX: make Thursday → 1 day instead of 2
+    days_to_saturday = max(days_to_saturday - 1, 0)
+
+    if days_to_saturday == 0:
+        text = "Tomorrow"
+    elif days_to_saturday == 1:
+        text = "1 day"
+    else:
+        text = f"{days_to_saturday} days"
+
     return {
         "title": "Weekend Indicator",
         "name": "Next weekend",
-        "days_text": f"{days_to_saturday} days",
+        "days_text": text,
         "is_weekend": False,
     }
 
