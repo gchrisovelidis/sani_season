@@ -49,7 +49,7 @@ OFFICE_LOCATIONS = {
 PROPERTY_LOCATIONS = {
     "Halkidiki": "Polygyros,GR",
     "Corfu": "Kerkyra,GR",
-    "Kos": "Kos Town,GR",
+    "Kos": "Kos, South Aegean, Greece",
     "Crete": "Heraklion,GR",
     "Marbella": "Marbella,ES",
     "Mallorca": "Palma,ES",
