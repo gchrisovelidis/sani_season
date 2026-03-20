@@ -1,5 +1,5 @@
 import base64
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time
 from pathlib import Path
 from string import Template
 from zoneinfo import ZoneInfo
@@ -193,6 +193,36 @@ def get_weather_icon_svg(weather: str) -> str:
     )
 
 
+def get_weather_temp_class(temp_value) -> str:
+    if temp_value is None:
+        return "temp-unavailable"
+    if temp_value <= 10:
+        return "temp-cold"
+    if temp_value <= 19:
+        return "temp-mild"
+    if temp_value <= 27:
+        return "temp-warm"
+    return "temp-hot"
+
+
+def get_weather_condition_class(weather: str) -> str:
+    weather = (weather or "").strip().lower()
+
+    mapping = {
+        "clear": "cond-clear",
+        "clouds": "cond-clouds",
+        "rain": "cond-rain",
+        "drizzle": "cond-drizzle",
+        "thunderstorm": "cond-thunderstorm",
+        "snow": "cond-snow",
+        "mist": "cond-mist",
+        "fog": "cond-mist",
+        "haze": "cond-mist",
+        "unavailable": "cond-unavailable",
+    }
+    return mapping.get(weather, "cond-default")
+
+
 @st.cache_data(ttl=600, show_spinner=False)
 def fetch_weather(query: str, api_key: str) -> dict:
     url = "https://api.openweathermap.org/data/2.5/weather"
@@ -215,15 +245,37 @@ def get_weather_for_city(query: str) -> dict:
         data = result["json"]
 
         if status_code != 200:
-            return {"temp": "—", "weather": "Unavailable", "icon": get_weather_icon_svg("Unavailable")}
+            return {
+                "temp": "—",
+                "temp_value": None,
+                "temp_class": get_weather_temp_class(None),
+                "weather": "Unavailable",
+                "condition_class": get_weather_condition_class("Unavailable"),
+                "icon": get_weather_icon_svg("Unavailable"),
+            }
 
         temp = round(data["main"]["temp"])
         weather = data["weather"][0]["main"]
         icon = get_weather_icon_svg(weather)
-        return {"temp": f"{temp}°C", "weather": weather, "icon": icon}
+
+        return {
+            "temp": f"{temp}°C",
+            "temp_value": temp,
+            "temp_class": get_weather_temp_class(temp),
+            "weather": weather,
+            "condition_class": get_weather_condition_class(weather),
+            "icon": icon,
+        }
 
     except Exception:
-        return {"temp": "—", "weather": "Unavailable", "icon": get_weather_icon_svg("Unavailable")}
+        return {
+            "temp": "—",
+            "temp_value": None,
+            "temp_class": get_weather_temp_class(None),
+            "weather": "Unavailable",
+            "condition_class": get_weather_condition_class("Unavailable"),
+            "icon": get_weather_icon_svg("Unavailable"),
+        }
 
 
 def render_weather_rows(locations: dict, office: bool = False) -> str:
@@ -236,12 +288,12 @@ def render_weather_rows(locations: dict, office: bool = False) -> str:
             <div class="{row_class}">
                 <div class="weather-left">
                     <div class="weather-city">{label}</div>
-                    <div class="weather-condition">
+                    <div class="weather-condition {info["condition_class"]}">
                         <span class="weather-icon">{info["icon"]}</span>
                         <span>{info["weather"]}</span>
                     </div>
                 </div>
-                <div class="weather-temp">{info["temp"]}</div>
+                <div class="weather-temp {info["temp_class"]}">{info["temp"]}</div>
             </div>
             """
         )
@@ -257,6 +309,16 @@ def get_next_holiday(today_: date):
     return next_name, next_date, days_left
 
 
+def get_holiday_alert_class(days_left) -> str:
+    if days_left is None:
+        return ""
+    if days_left < 3:
+        return "alert-danger"
+    if days_left <= 7:
+        return "alert-warning"
+    return "alert-normal"
+
+
 def get_weekend_indicator(today_: date):
     weekday = today_.weekday()
 
@@ -266,26 +328,24 @@ def get_weekend_indicator(today_: date):
             "name": "Weekend",
             "days_text": "Today",
             "is_weekend": True,
+            "alert_class": "alert-weekend",
         }
 
-    # FIX: don't count today
-    days_to_saturday = (5 - weekday)
+    days_to_saturday = 5 - weekday
 
-    # Adjust for UX: make Thursday → 1 day instead of 2
-    days_to_saturday = max(days_to_saturday - 1, 0)
-
-    if days_to_saturday == 0:
+    if days_to_saturday == 1:
         text = "Tomorrow"
-    elif days_to_saturday == 1:
-        text = "1 day"
+        alert_class = "alert-warning"
     else:
         text = f"{days_to_saturday} days"
+        alert_class = "alert-normal"
 
     return {
         "title": "Weekend Indicator",
         "name": "Next weekend",
         "days_text": text,
         "is_weekend": False,
+        "alert_class": alert_class,
     }
 
 
@@ -334,15 +394,16 @@ progress_bar = f"""
 # Bank Holiday
 # -----------------------
 holiday_name, holiday_date, holiday_days = get_next_holiday(today)
-holiday_urgent_class = " urgent" if holiday_days is not None and holiday_days < 3 else ""
+holiday_alert_class = get_holiday_alert_class(holiday_days)
 
 holiday_html = ""
 if holiday_name is not None:
+    day_label = "day" if holiday_days == 1 else "days"
     holiday_html = f"""
     <div class="section holiday-section">
         <div class="section-title">Next Bank Holiday</div>
-        <div class="holiday-name{holiday_urgent_class}">{holiday_name}</div>
-        <div class="holiday-days{holiday_urgent_class}">{holiday_days} days</div>
+        <div class="holiday-name {holiday_alert_class}">{holiday_name}</div>
+        <div class="holiday-days {holiday_alert_class}">{holiday_days} {day_label}</div>
     </div>
     """
 
@@ -350,13 +411,12 @@ if holiday_name is not None:
 # Weekend
 # -----------------------
 weekend = get_weekend_indicator(today)
-weekend_urgent_class = " weekend-now" if weekend["is_weekend"] else ""
 
 weekend_html = f"""
 <div class="section weekend-section">
     <div class="section-title">{weekend["title"]}</div>
-    <div class="weekend-name{weekend_urgent_class}">{weekend["name"]}</div>
-    <div class="weekend-days{weekend_urgent_class}">{weekend["days_text"]}</div>
+    <div class="weekend-name {weekend["alert_class"]}">{weekend["name"]}</div>
+    <div class="weekend-days {weekend["alert_class"]}">{weekend["days_text"]}</div>
 </div>
 """
 
@@ -471,7 +531,7 @@ html_template = Template(
             justify-content: space-between;
             align-items: flex-start;
             gap: 16px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .weather-left {
@@ -490,8 +550,8 @@ html_template = Template(
             align-items: center;
             gap: 6px;
             font-size: 13px;
-            color: #7a8190;
             margin-top: 3px;
+            font-weight: 500;
         }
 
         .weather-icon {
@@ -512,7 +572,56 @@ html_template = Template(
             font-weight: 700;
             line-height: 1.1;
             white-space: nowrap;
+        }
+
+        .temp-cold {
+            color: #3b82f6;
+        }
+
+        .temp-mild {
             color: #2f3345;
+        }
+
+        .temp-warm {
+            color: #d97706;
+        }
+
+        .temp-hot {
+            color: #c2410c;
+        }
+
+        .temp-unavailable {
+            color: #9aa3b2;
+        }
+
+        .cond-clear {
+            color: #c97a00;
+        }
+
+        .cond-clouds {
+            color: #7b8798;
+        }
+
+        .cond-rain,
+        .cond-drizzle {
+            color: #3478c8;
+        }
+
+        .cond-thunderstorm {
+            color: #8b5cf6;
+        }
+
+        .cond-snow {
+            color: #4b8fdc;
+        }
+
+        .cond-mist {
+            color: #8a94a6;
+        }
+
+        .cond-unavailable,
+        .cond-default {
+            color: #8a94a6;
         }
 
         .holiday-section,
@@ -525,22 +634,28 @@ html_template = Template(
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 6px;
-            color: #2f3345;
         }
 
         .holiday-days,
         .weekend-days {
             font-size: 20px;
             font-weight: 700;
+        }
+
+        .alert-normal {
             color: #2f3345;
         }
 
-        .urgent {
-            color: #c94b2c;
+        .alert-warning {
+            color: #d97706;
         }
 
-        .weekend-now {
-            color: #1f6f5f;
+        .alert-danger {
+            color: #c2410c;
+        }
+
+        .alert-weekend {
+            color: #2e8b57;
         }
 
         .label {
@@ -577,10 +692,11 @@ html_template = Template(
         .progress-bar {
             width: 100%;
             height: 14px;
-            background: #eceef2;
+            background: #e8edf5;
             border-radius: 999px;
             overflow: hidden;
             margin-bottom: 8px;
+            box-shadow: inset 0 1px 2px rgba(32, 55, 95, 0.06);
         }
 
         .center-progress-bar {
@@ -589,7 +705,7 @@ html_template = Template(
 
         .progress-fill {
             height: 100%;
-            background: #2f3345;
+            background: linear-gradient(90deg, #1f5fae 0%, #4a90e2 100%);
             border-radius: 999px;
         }
 
