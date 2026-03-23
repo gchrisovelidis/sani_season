@@ -368,6 +368,51 @@ def get_weekend_indicator(today_: date):
     }
 
 
+def get_theme_colors(dark_mode: bool) -> dict:
+    if dark_mode:
+        return {
+            "bg": "#081225",
+            "text": "#EAF1FF",
+            "muted": "#A9B8D0",
+            "section_title": "#93A7C4",
+            "divider": "#22324A",
+            "weather_city": "#EAF1FF",
+            "temp_mild": "#C7D2E3",
+            "alert_normal": "#EAF1FF",
+            "alert_warning": "#F59E0B",
+            "alert_danger": "#FB923C",
+            "alert_weekend": "#34D399",
+            "progress_bg": "#243247",
+            "progress_fill_1": "#3B82F6",
+            "progress_fill_2": "#60A5FA",
+            "logo_shadow": "0 2px 10px rgba(0,0,0,0.35)",
+        }
+
+    return {
+        "bg": "#FFFFFF",
+        "text": "#2F3345",
+        "muted": "#5F6675",
+        "section_title": "#5F6B7A",
+        "divider": "#E3E8F0",
+        "weather_city": "#2F3345",
+        "temp_mild": "#475569",
+        "alert_normal": "#2F3345",
+        "alert_warning": "#D97706",
+        "alert_danger": "#C2410C",
+        "alert_weekend": "#2E8B57",
+        "progress_bg": "#E8EDF5",
+        "progress_fill_1": "#1F5FAE",
+        "progress_fill_2": "#4A90E2",
+        "logo_shadow": "none",
+    }
+
+
+# -----------------------
+# Toggle + theme
+# -----------------------
+dark_mode = st.toggle("🌙 Dark mode", value=False)
+theme = get_theme_colors(dark_mode)
+
 # -----------------------
 # Time calculations
 # -----------------------
@@ -482,7 +527,6 @@ html_template = Template(
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="refresh" content="60">
     <meta charset="utf-8">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -493,20 +537,22 @@ html_template = Template(
             padding: 0;
             height: 100%;
             overflow: hidden;
-            background: white;
+            background: $bg;
             font-family: 'Inter', Arial, Helvetica, sans-serif;
-            color: #2f3345;
+            color: $text;
         }
 
         .page {
             display: flex;
             width: 100%;
             height: 100vh;
-            background: white;
+            background: $bg;
         }
 
         .left {
-            width: 34%;
+            width: 320px;
+            min-width: 320px;
+            max-width: 320px;
             padding: 24px 28px 20px 32px;
             box-sizing: border-box;
             display: flex;
@@ -515,18 +561,19 @@ html_template = Template(
         }
 
         .center {
-            width: 66%;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px 20px;
+            padding: 10px 40px;
             box-sizing: border-box;
         }
 
         .content {
             text-align: center;
             width: 100%;
-            max-width: 760px;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
         .logo {
@@ -540,6 +587,7 @@ html_template = Template(
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
+            filter: drop-shadow($logo_shadow);
         }
 
         .section {
@@ -549,7 +597,7 @@ html_template = Template(
         .section-title {
             font-size: 13px;
             font-weight: 700;
-            color: #5F6B7A;
+            color: $section_title;
             text-transform: uppercase;
             letter-spacing: 0.7px;
             margin-bottom: 12px;
@@ -557,7 +605,7 @@ html_template = Template(
 
         .section-divider {
             height: 1px;
-            background: #E3E8F0;
+            background: $divider;
             margin: 12px 0 14px 0;
         }
 
@@ -578,7 +626,7 @@ html_template = Template(
             font-size: 17px;
             font-weight: 600;
             line-height: 1.2;
-            color: #2f3345;
+            color: $weather_city;
         }
 
         .weather-condition {
@@ -616,7 +664,7 @@ html_template = Template(
         }
 
         .temp-mild {
-            color: #475569;
+            color: $temp_mild;
         }
 
         .temp-warm {
@@ -684,29 +732,54 @@ html_template = Template(
         }
 
         .alert-normal {
-            color: #2F3345;
+            color: $alert_normal;
         }
 
         .alert-warning {
-            color: #D97706;
+            color: $alert_warning;
         }
 
         .alert-danger {
-            color: #C2410C;
+            color: $alert_danger;
         }
 
         .alert-weekend {
-            color: #2E8B57;
+            color: $alert_weekend;
+        }
+
+        .label {
+            font-size: 18px;
+            color: $muted;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .clock,
+        .countdown,
+        .days {
+            font-size: 70px;
+            font-weight: 700;
+            line-height: 1;
+            color: $text;
+        }
+
+        .clock,
+        .countdown {
+            margin-bottom: 25px;
+        }
+
+        .days {
+            margin-bottom: 24px;
         }
 
         .progress-bar {
             width: 100%;
             height: 14px;
-            background: #E8EDF5;
+            background: $progress_bg;
             border-radius: 999px;
             overflow: hidden;
             margin-bottom: 8px;
-            box-shadow: inset 0 1px 2px rgba(32, 55, 95, 0.06);
+            box-shadow: inset 0 1px 2px rgba(32, 55, 95, 0.10);
         }
 
         .center-progress-bar {
@@ -715,7 +788,7 @@ html_template = Template(
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #1F5FAE 0%, #4A90E2 100%);
+            background: linear-gradient(90deg, $progress_fill_1 0%, $progress_fill_2 100%);
             border-radius: 999px;
             transition: width 0.6s ease;
         }
@@ -723,7 +796,7 @@ html_template = Template(
         .progress-text {
             font-size: 16px;
             font-weight: 700;
-            color: #2f3345;
+            color: $text;
         }
 
         .progress-sticker-wrap {
@@ -743,12 +816,18 @@ html_template = Template(
 
         @media (max-width: 1100px) {
             .left {
-                width: 36%;
+                width: 280px;
+                min-width: 280px;
+                max-width: 280px;
                 padding: 22px;
             }
 
             .center {
-                width: 64%;
+                padding: 10px 24px;
+            }
+
+            .content {
+                max-width: 760px;
             }
 
             .clock,
@@ -766,10 +845,14 @@ html_template = Template(
         @media (max-width: 768px) {
             .page {
                 flex-direction: column;
+                height: auto;
             }
 
-            .left, .center {
+            .left,
+            .center {
                 width: 100%;
+                min-width: 100%;
+                max-width: 100%;
             }
 
             .left {
@@ -778,6 +861,10 @@ html_template = Template(
 
             .center {
                 padding: 10px 20px 20px 20px;
+            }
+
+            .content {
+                max-width: 100%;
             }
 
             .logo img {
@@ -794,37 +881,6 @@ html_template = Template(
                 width: 95px;
                 height: 95px;
             }
-        }
-
-        .label {
-            font-size: 18px;
-            color: #5F6675;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        .clock,
-        .countdown,
-        .days {
-            font-size: 70px;
-            font-weight: 700;
-            line-height: 1;
-            color: #2F3345;
-        }
-
-        .clock,
-        .countdown {
-            margin-bottom: 25px;
-        }
-
-        .days {
-            margin-bottom: 24px;
-        }
-
-        .progress-text {
-            font-size: 16px;
-            font-weight: 700;
-            color: #2F3345;
         }
     </style>
 </head>
@@ -869,6 +925,7 @@ html_template = Template(
             </div>
         </div>
     </div>
+
 <script>
     const timezone = "Europe/Athens";
     const startHour = 9;
@@ -964,6 +1021,21 @@ html = html_template.substitute(
     countdown_html=countdown_html,
     days_remaining_text=f"{days_remaining} days",
     progress_bar=progress_bar,
+    bg=theme["bg"],
+    text=theme["text"],
+    muted=theme["muted"],
+    section_title=theme["section_title"],
+    divider=theme["divider"],
+    weather_city=theme["weather_city"],
+    temp_mild=theme["temp_mild"],
+    alert_normal=theme["alert_normal"],
+    alert_warning=theme["alert_warning"],
+    alert_danger=theme["alert_danger"],
+    alert_weekend=theme["alert_weekend"],
+    progress_bg=theme["progress_bg"],
+    progress_fill_1=theme["progress_fill_1"],
+    progress_fill_2=theme["progress_fill_2"],
+    logo_shadow=theme["logo_shadow"],
 )
 
 components.html(html, height=760, scrolling=False)

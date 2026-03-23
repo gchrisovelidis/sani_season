@@ -35,6 +35,8 @@ st.markdown(
 # -----------------------
 TARGET_DATE = date(2026, 11, 7)
 SEASON_START = date(2026, 3, 26)
+DUETTO_LIVE_DATE = date(2026, 5, 5)
+
 START_SHOW_TIME = time(9, 0)
 END_SHOW_TIME = time(17, 30)
 TIMEZONE = "Europe/Athens"
@@ -407,6 +409,14 @@ def get_theme_colors(dark_mode: bool) -> dict:
     }
 
 
+def format_days_text(days_value: int) -> str:
+    if days_value < 0:
+        return "Live"
+    if days_value == 1:
+        return "1 day"
+    return f"{days_value} days"
+
+
 # -----------------------
 # Toggle + theme
 # -----------------------
@@ -472,32 +482,50 @@ progress_bar = f"""
 """
 
 # -----------------------
-# Bank Holiday
+# Left column cards
 # -----------------------
 holiday_name, holiday_date, holiday_days = get_next_holiday(today)
 holiday_alert_class = get_holiday_alert_class(holiday_days)
 
 holiday_html = ""
 if holiday_name is not None:
-    day_label = "day" if holiday_days == 1 else "days"
     holiday_html = f"""
-    <div class="section holiday-section">
+    <div class="section info-section">
         <div class="section-title">Next Bank Holiday</div>
-        <div class="holiday-name {holiday_alert_class}">{holiday_name}</div>
-        <div class="holiday-days {holiday_alert_class}">{holiday_days} {day_label}</div>
+        <div class="info-name {holiday_alert_class}">{holiday_name}</div>
+        <div class="info-days {holiday_alert_class}">{format_days_text(holiday_days)}</div>
     </div>
     """
 
-# -----------------------
-# Weekend
-# -----------------------
 weekend = get_weekend_indicator(today)
 
 weekend_html = f"""
-<div class="section weekend-section">
+<div class="section info-section">
     <div class="section-title">{weekend["title"]}</div>
-    <div class="weekend-name {weekend["alert_class"]}">{weekend["name"]}</div>
-    <div class="weekend-days {weekend["alert_class"]}">{weekend["days_text"]}</div>
+    <div class="info-name {weekend["alert_class"]}">{weekend["name"]}</div>
+    <div class="info-days {weekend["alert_class"]}">{weekend["days_text"]}</div>
+</div>
+"""
+
+# -----------------------
+# Right column cards
+# -----------------------
+duetto_days_remaining = (DUETTO_LIVE_DATE - today).days
+duetto_alert_class = get_holiday_alert_class(duetto_days_remaining)
+
+duetto_html = f"""
+<div class="section info-section">
+    <div class="section-title">Duetto goes live</div>
+    <div class="info-name {duetto_alert_class}">5 May</div>
+    <div class="info-days {duetto_alert_class}">{format_days_text(duetto_days_remaining)}</div>
+</div>
+"""
+
+ecommerce_html = """
+<div class="section info-section">
+    <div class="section-title">Ecommerce goes offline</div>
+    <div class="info-name alert-normal">Unknown</div>
+    <div class="info-days alert-normal">Unknown</div>
 </div>
 """
 
@@ -550,9 +578,8 @@ html_template = Template(
         }
 
         .left {
-            width: 320px;
-            min-width: 320px;
-            max-width: 320px;
+            width: 28%;
+            min-width: 280px;
             padding: 24px 28px 20px 32px;
             box-sizing: border-box;
             display: flex;
@@ -560,19 +587,29 @@ html_template = Template(
             justify-content: flex-start;
         }
 
-        .center {
-            flex: 1;
+        .middle {
+            width: 44%;
+            padding: 24px 30px 24px 30px;
+            box-sizing: border-box;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px 40px;
+        }
+
+        .right {
+            width: 28%;
+            min-width: 280px;
+            padding: 24px 32px 20px 28px;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
         .content {
             text-align: center;
             width: 100%;
-            max-width: 900px;
+            max-width: 760px;
             margin: 0 auto;
         }
 
@@ -713,20 +750,17 @@ html_template = Template(
             color: #9CA3AF;
         }
 
-        .holiday-section,
-        .weekend-section {
+        .info-section {
             margin-top: 4px;
         }
 
-        .holiday-name,
-        .weekend-name {
+        .info-name {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 6px;
         }
 
-        .holiday-days,
-        .weekend-days {
+        .info-days {
             font-size: 20px;
             font-weight: 700;
         }
@@ -814,26 +848,11 @@ html_template = Template(
             -webkit-user-drag: none;
         }
 
-        @media (max-width: 1100px) {
-            .left {
-                width: 280px;
-                min-width: 280px;
-                max-width: 280px;
-                padding: 22px;
-            }
-
-            .center {
-                padding: 10px 24px;
-            }
-
-            .content {
-                max-width: 760px;
-            }
-
+        @media (max-width: 1200px) {
             .clock,
             .countdown,
             .days {
-                font-size: 56px;
+                font-size: 58px;
             }
 
             .progress-sticker {
@@ -842,25 +861,19 @@ html_template = Template(
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .page {
                 flex-direction: column;
                 height: auto;
             }
 
             .left,
-            .center {
+            .middle,
+            .right {
                 width: 100%;
                 min-width: 100%;
                 max-width: 100%;
-            }
-
-            .left {
                 padding: 20px;
-            }
-
-            .center {
-                padding: 10px 20px 20px 20px;
             }
 
             .content {
@@ -908,7 +921,7 @@ html_template = Template(
             $weekend_html
         </div>
 
-        <div class="center">
+        <div class="middle">
             <div class="content">
                 $logo_html
                 <div class="label">Current time</div>
@@ -923,6 +936,14 @@ html_template = Template(
 
                 $progress_bar
             </div>
+        </div>
+
+        <div class="right">
+            $duetto_html
+
+            <div class="section-divider"></div>
+
+            $ecommerce_html
         </div>
     </div>
 
@@ -1016,6 +1037,8 @@ html = html_template.substitute(
     property_weather_html=property_weather_html,
     holiday_html=holiday_html,
     weekend_html=weekend_html,
+    duetto_html=duetto_html,
+    ecommerce_html=ecommerce_html,
     logo_html=logo_html,
     current_time_text=now.strftime("%H:%M"),
     countdown_html=countdown_html,
