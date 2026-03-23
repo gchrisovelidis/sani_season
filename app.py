@@ -544,7 +544,7 @@ html_template = Template(
         .section-title {
             font-size: 13px;
             font-weight: 700;
-            color: #5F6B7A;
+            color: #4E647E;
             text-transform: uppercase;
             letter-spacing: 0.7px;
             margin-bottom: 12px;
