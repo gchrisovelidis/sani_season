@@ -388,8 +388,13 @@ if show_countdown:
     countdown_text = f"{hours}h {minutes:02d}m"
 
     countdown_html = f"""
-        <div class="label">Time until 17:30</div>
-        <div class="countdown">{countdown_text}</div>
+        <div class="label" id="countdown-label">Time until 17:30</div>
+        <div class="countdown" id="live-countdown">{countdown_text}</div>
+    """
+else:
+    countdown_html = """
+        <div class="label" id="countdown-label" style="display:none;">Time until 17:30</div>
+        <div class="countdown" id="live-countdown" style="display:none;"></div>
     """
 
 # -----------------------
@@ -544,7 +549,7 @@ html_template = Template(
         .section-title {
             font-size: 13px;
             font-weight: 700;
-            color: #4E647E;
+            color: #5F6B7A;
             text-transform: uppercase;
             letter-spacing: 0.7px;
             margin-bottom: 12px;
@@ -552,7 +557,7 @@ html_template = Template(
 
         .section-divider {
             height: 1px;
-            background: #e6e9ef;
+            background: #E3E8F0;
             margin: 12px 0 14px 0;
         }
 
@@ -850,14 +855,99 @@ html_template = Template(
             <div class="content">
                 $logo_html
                 <div class="label">Current time</div>
-                <div class="clock">$current_time_text</div>
-                $countdown_html
+                <div class="clock" id="live-clock">$current_time_text</div>
+
+                <div id="countdown-block">
+                    $countdown_html
+                </div>
+
                 <div class="label">Days until 7 November 2026</div>
-                <div class="days">$days_remaining_text</div>
+                <div class="days" id="days-remaining">$days_remaining_text</div>
+
                 $progress_bar
             </div>
         </div>
     </div>
+<script>
+    const timezone = "Europe/Athens";
+    const startHour = 9;
+    const startMinute = 0;
+    const endHour = 17;
+    const endMinute = 30;
+    const targetDateStr = "2026-11-07";
+
+    function getAthensNow() {
+        const now = new Date();
+        const athens = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
+        return athens;
+    }
+
+    function formatTime(dateObj) {
+        const hours = String(dateObj.getHours()).padStart(2, "0");
+        const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+        return `${hours}:${minutes}`;
+    }
+
+    function updateClock() {
+        const now = getAthensNow();
+        const clockEl = document.getElementById("live-clock");
+        if (clockEl) {
+            clockEl.textContent = formatTime(now);
+        }
+    }
+
+    function updateCountdown() {
+        const now = getAthensNow();
+
+        const labelEl = document.getElementById("countdown-label");
+        const countdownEl = document.getElementById("live-countdown");
+
+        if (!countdownEl) return;
+
+        const start = new Date(now);
+        start.setHours(startHour, startMinute, 0, 0);
+
+        const end = new Date(now);
+        end.setHours(endHour, endMinute, 0, 0);
+
+        if (now >= start && now <= end) {
+            const diffMs = end - now;
+            const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            if (labelEl) labelEl.style.display = "block";
+            countdownEl.style.display = "block";
+            countdownEl.textContent = `${hours}h ${String(minutes).padStart(2, "0")}m`;
+        } else {
+            if (labelEl) labelEl.style.display = "none";
+            countdownEl.style.display = "none";
+        }
+    }
+
+    function updateDaysRemaining() {
+        const daysEl = document.getElementById("days-remaining");
+        if (!daysEl) return;
+
+        const now = getAthensNow();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const target = new Date(targetDateStr + "T00:00:00");
+
+        const diffMs = target - today;
+        const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+        daysEl.textContent = `${days} days`;
+    }
+
+    function refreshLiveData() {
+        updateClock();
+        updateCountdown();
+        updateDaysRemaining();
+    }
+
+    refreshLiveData();
+    setInterval(refreshLiveData, 1000);
+</script>
 </body>
 </html>
 """
