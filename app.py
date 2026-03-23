@@ -885,7 +885,7 @@ html_template = Template(
     function formatTime(dateObj) {
         const hours = String(dateObj.getHours()).padStart(2, "0");
         const minutes = String(dateObj.getMinutes()).padStart(2, "0");
-        return `${hours}:${minutes}`;
+        return hours + ":" + minutes;
     }
 
     function updateClock() {
@@ -918,7 +918,7 @@ html_template = Template(
 
             if (labelEl) labelEl.style.display = "block";
             countdownEl.style.display = "block";
-            countdownEl.textContent = `${hours}h ${String(minutes).padStart(2, "0")}m`;
+            countdownEl.textContent = hours + "h " + String(minutes).padStart(2, "0") + "m";
         } else {
             if (labelEl) labelEl.style.display = "none";
             countdownEl.style.display = "none";
@@ -936,7 +936,7 @@ html_template = Template(
         const diffMs = target - today;
         const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-        daysEl.textContent = `${days} days`;
+        daysEl.textContent = days + " days";
     }
 
     function refreshLiveData() {
