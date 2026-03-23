@@ -68,14 +68,33 @@ BANK_HOLIDAYS = [
     (date(2026, 12, 26), "2η μέρα Χριστουγέννων"),
 ]
 
+STICKER_RULES = [
+    (20, "Sticker1.png"),
+    (40, "Sticker2.png"),
+    (60, "Sticker3.png"),
+    (80, "Sticker4.png"),
+    (100, "Sticker5.png"),
+]
+
 # -----------------------
 # Helpers
 # -----------------------
-def get_logo_base64(path: str) -> str:
+def get_image_base64(path: str) -> str:
     file_path = Path(path)
     if not file_path.exists():
         return ""
     return base64.b64encode(file_path.read_bytes()).decode()
+
+
+def get_logo_base64(path: str) -> str:
+    return get_image_base64(path)
+
+
+def get_progress_sticker_path(progress_pct: float) -> str:
+    for limit, path in STICKER_RULES:
+        if progress_pct <= limit:
+            return path
+    return STICKER_RULES[-1][1]
 
 
 def get_weather_icon_svg(weather: str) -> str:
@@ -369,8 +388,13 @@ if show_countdown:
     countdown_text = f"{hours}h {minutes:02d}m"
 
     countdown_html = f"""
-        <div class="label">Time until 17:30</div>
-        <div class="countdown">{countdown_text}</div>
+        <div class="label" id="countdown-label">Time until 17:30</div>
+        <div class="countdown" id="live-countdown">{countdown_text}</div>
+    """
+else:
+    countdown_html = """
+        <div class="label" id="countdown-label" style="display:none;">Time until 17:30</div>
+        <div class="countdown" id="live-countdown" style="display:none;"></div>
     """
 
 # -----------------------
@@ -380,6 +404,17 @@ total_days = (TARGET_DATE - SEASON_START).days
 elapsed_days = (today - SEASON_START).days
 progress = max(0, min(100, int((elapsed_days / total_days) * 100))) if total_days > 0 else 0
 
+sticker_path = get_progress_sticker_path(progress)
+sticker_b64 = get_image_base64(sticker_path)
+
+sticker_html = ""
+if sticker_b64:
+    sticker_html = f"""
+    <div class="progress-sticker-wrap">
+        <img src="data:image/png;base64,{sticker_b64}" alt="Progress Sticker" class="progress-sticker">
+    </div>
+    """
+
 progress_bar = f"""
 <div class="center-progress">
     <div class="label">Season Progress</div>
@@ -387,6 +422,7 @@ progress_bar = f"""
         <div class="progress-fill" style="width:{progress}%"></div>
     </div>
     <div class="progress-text">{progress}%</div>
+    {sticker_html}
 </div>
 """
 
@@ -513,7 +549,7 @@ html_template = Template(
         .section-title {
             font-size: 13px;
             font-weight: 700;
-            color: #7a8190;
+            color: #5F6B7A;
             text-transform: uppercase;
             letter-spacing: 0.7px;
             margin-bottom: 12px;
@@ -521,7 +557,7 @@ html_template = Template(
 
         .section-divider {
             height: 1px;
-            background: #e6e9ef;
+            background: #E3E8F0;
             margin: 12px 0 14px 0;
         }
 
@@ -681,12 +717,28 @@ html_template = Template(
             height: 100%;
             background: linear-gradient(90deg, #1F5FAE 0%, #4A90E2 100%);
             border-radius: 999px;
+            transition: width 0.6s ease;
         }
 
         .progress-text {
             font-size: 16px;
             font-weight: 700;
             color: #2f3345;
+        }
+
+        .progress-sticker-wrap {
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        .progress-sticker {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            display: inline-block;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
         }
 
         @media (max-width: 1100px) {
@@ -703,6 +755,11 @@ html_template = Template(
             .countdown,
             .days {
                 font-size: 56px;
+            }
+
+            .progress-sticker {
+                width: 105px;
+                height: 105px;
             }
         }
 
@@ -732,7 +789,13 @@ html_template = Template(
             .days {
                 font-size: 42px;
             }
+
+            .progress-sticker {
+                width: 95px;
+                height: 95px;
+            }
         }
+
         .label {
             font-size: 18px;
             color: #5F6675;
@@ -793,14 +856,99 @@ html_template = Template(
             <div class="content">
                 $logo_html
                 <div class="label">Current time</div>
-                <div class="clock">$current_time_text</div>
-                $countdown_html
+                <div class="clock" id="live-clock">$current_time_text</div>
+
+                <div id="countdown-block">
+                    $countdown_html
+                </div>
+
                 <div class="label">Days until 7 November 2026</div>
-                <div class="days">$days_remaining_text</div>
+                <div class="days" id="days-remaining">$days_remaining_text</div>
+
                 $progress_bar
             </div>
         </div>
     </div>
+<script>
+    const timezone = "Europe/Athens";
+    const startHour = 9;
+    const startMinute = 0;
+    const endHour = 17;
+    const endMinute = 30;
+    const targetDateStr = "2026-11-07";
+
+    function getAthensNow() {
+        const now = new Date();
+        const athens = new Date(now.toLocaleString("en-US", { timeZone: timezone }));
+        return athens;
+    }
+
+    function formatTime(dateObj) {
+        const hours = String(dateObj.getHours()).padStart(2, "0");
+        const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+        return hours + ":" + minutes;
+    }
+
+    function updateClock() {
+        const now = getAthensNow();
+        const clockEl = document.getElementById("live-clock");
+        if (clockEl) {
+            clockEl.textContent = formatTime(now);
+        }
+    }
+
+    function updateCountdown() {
+        const now = getAthensNow();
+
+        const labelEl = document.getElementById("countdown-label");
+        const countdownEl = document.getElementById("live-countdown");
+
+        if (!countdownEl) return;
+
+        const start = new Date(now);
+        start.setHours(startHour, startMinute, 0, 0);
+
+        const end = new Date(now);
+        end.setHours(endHour, endMinute, 0, 0);
+
+        if (now >= start && now <= end) {
+            const diffMs = end - now;
+            const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            if (labelEl) labelEl.style.display = "block";
+            countdownEl.style.display = "block";
+            countdownEl.textContent = hours + "h " + String(minutes).padStart(2, "0") + "m";
+        } else {
+            if (labelEl) labelEl.style.display = "none";
+            countdownEl.style.display = "none";
+        }
+    }
+
+    function updateDaysRemaining() {
+        const daysEl = document.getElementById("days-remaining");
+        if (!daysEl) return;
+
+        const now = getAthensNow();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const target = new Date(targetDateStr + "T00:00:00");
+
+        const diffMs = target - today;
+        const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+        daysEl.textContent = days + " days";
+    }
+
+    function refreshLiveData() {
+        updateClock();
+        updateCountdown();
+        updateDaysRemaining();
+    }
+
+    refreshLiveData();
+    setInterval(refreshLiveData, 1000);
+</script>
 </body>
 </html>
 """

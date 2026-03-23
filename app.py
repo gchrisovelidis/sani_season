@@ -39,6 +39,7 @@ START_SHOW_TIME = time(9, 0)
 END_SHOW_TIME = time(17, 30)
 TIMEZONE = "Europe/Athens"
 LOGO_PATH = "logo.png"
+DARK_MODE = True
 
 API_KEY = st.secrets["API_KEY"]
 
@@ -366,7 +367,43 @@ def get_weekend_indicator(today_: date):
         "is_weekend": False,
         "alert_class": alert_class,
     }
+def get_theme_colors(dark_mode: bool) -> dict:
+    if dark_mode:
+        return {
+            "bg": "#0F172A",
+            "text": "#E5E7EB",
+            "muted": "#94A3B8",
+            "section_title": "#A5B4C7",
+            "divider": "#243041",
+            "weather_city": "#E5E7EB",
+            "temp_mild": "#CBD5E1",
+            "alert_normal": "#E5E7EB",
+            "alert_warning": "#F59E0B",
+            "alert_danger": "#FB923C",
+            "alert_weekend": "#34D399",
+            "progress_bg": "#1F2937",
+            "progress_fill_1": "#3B82F6",
+            "progress_fill_2": "#60A5FA",
+            "logo_shadow": "0 2px 10px rgba(0,0,0,0.35)",
+        }
 
+    return {
+        "bg": "#FFFFFF",
+        "text": "#2F3345",
+        "muted": "#5F6675",
+        "section_title": "#5F6B7A",
+        "divider": "#E3E8F0",
+        "weather_city": "#2F3345",
+        "temp_mild": "#475569",
+        "alert_normal": "#2F3345",
+        "alert_warning": "#D97706",
+        "alert_danger": "#C2410C",
+        "alert_weekend": "#2E8B57",
+        "progress_bg": "#E8EDF5",
+        "progress_fill_1": "#1F5FAE",
+        "progress_fill_2": "#4A90E2",
+        "logo_shadow": "none",
+    }
 
 # -----------------------
 # Time calculations
@@ -477,6 +514,7 @@ property_weather_html = render_weather_rows(PROPERTY_LOCATIONS, office=False)
 # -----------------------
 # HTML
 # -----------------------
+theme = get_theme_colors(DARK_MODE)
 html_template = Template(
     """
 <!DOCTYPE html>
@@ -493,44 +531,89 @@ html_template = Template(
             padding: 0;
             height: 100%;
             overflow: hidden;
-            background: white;
+            background: $bg;
             font-family: 'Inter', Arial, Helvetica, sans-serif;
-            color: #2f3345;
+            color: $text;
         }
 
         .page {
             display: flex;
             width: 100%;
             height: 100vh;
-            background: white;
+            background: $bg;
         }
 
-        .left {
-            width: 34%;
-            padding: 24px 28px 20px 32px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: $section_title;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 12px;
         }
 
-        .center {
-            width: 66%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            box-sizing: border-box;
+        .section-divider {
+            height: 1px;
+            background: $divider;
+            margin: 12px 0 14px 0;
         }
 
-        .content {
-            text-align: center;
+        .weather-city {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.2;
+            color: $weather_city;
+        }
+
+        .temp-mild {
+            color: $temp_mild;
+        }
+
+        .alert-normal {
+            color: $alert_normal;
+        }
+
+        .alert-warning {
+            color: $alert_warning;
+        }
+
+        .alert-danger {
+            color: $alert_danger;
+        }
+
+        .alert-weekend {
+            color: $alert_weekend;
+        }
+
+        .progress-bar {
             width: 100%;
-            max-width: 760px;
+            height: 14px;
+            background: $progress_bg;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            box-shadow: inset 0 1px 2px rgba(32, 55, 95, 0.10);
         }
 
-        .logo {
-            margin-bottom: 18px;
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, $progress_fill_1 0%, $progress_fill_2 100%);
+            border-radius: 999px;
+            transition: width 0.6s ease;
+        }
+
+        .label {
+            font-size: 18px;
+            color: $muted;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .clock,
+        .countdown,
+        .days,
+        .progress-text {
+            color: $text;
         }
 
         .logo img {
@@ -540,6 +623,7 @@ html_template = Template(
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
+            filter: drop-shadow($logo_shadow);
         }
 
         .section {
@@ -717,6 +801,7 @@ html_template = Template(
             height: 100%;
             background: linear-gradient(90deg, #1F5FAE 0%, #4A90E2 100%);
             border-radius: 999px;
+            transition: width 0.6s ease;
         }
 
         .progress-text {
@@ -963,6 +1048,21 @@ html = html_template.substitute(
     countdown_html=countdown_html,
     days_remaining_text=f"{days_remaining} days",
     progress_bar=progress_bar,
+    bg=theme["bg"],
+    text=theme["text"],
+    muted=theme["muted"],
+    section_title=theme["section_title"],
+    divider=theme["divider"],
+    weather_city=theme["weather_city"],
+    temp_mild=theme["temp_mild"],
+    alert_normal=theme["alert_normal"],
+    alert_warning=theme["alert_warning"],
+    alert_danger=theme["alert_danger"],
+    alert_weekend=theme["alert_weekend"],
+    progress_bg=theme["progress_bg"],
+    progress_fill_1=theme["progress_fill_1"],
+    progress_fill_2=theme["progress_fill_2"],
+    logo_shadow=theme["logo_shadow"],
 )
 
 components.html(html, height=760, scrolling=False)
