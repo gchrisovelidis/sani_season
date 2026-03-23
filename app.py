@@ -516,16 +516,15 @@ duetto_alert_class = get_holiday_alert_class(duetto_days_remaining)
 duetto_html = f"""
 <div class="section info-section">
     <div class="section-title">Duetto goes live</div>
-    <div class="info-name {duetto_alert_class}">5 May</div>
-    <div class="info-days {duetto_alert_class}">{format_days_text(duetto_days_remaining)}</div>
+    <div class="info-name alert-danger">5 May</div>
+    <div class="info-days alert-danger">{format_days_text(duetto_days_remaining)}</div>
 </div>
 """
 
 ecommerce_html = """
 <div class="section info-section">
-    <div class="section-title">Ecommerce goes offline</div>
+    <div class="section-title">E-commerce goes offline</div>
     <div class="info-name alert-normal">Unknown</div>
-    <div class="info-days alert-normal">Unknown</div>
 </div>
 """
 
