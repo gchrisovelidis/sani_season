@@ -733,6 +733,36 @@ html_template = Template(
                 font-size: 42px;
             }
         }
+        .label {
+            font-size: 18px;
+            color: #5F6675;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .clock,
+        .countdown,
+        .days {
+            font-size: 70px;
+            font-weight: 700;
+            line-height: 1;
+            color: #2F3345;
+        }
+
+        .clock,
+        .countdown {
+            margin-bottom: 25px;
+        }
+
+        .days {
+            margin-bottom: 24px;
+        }
+
+        .progress-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2F3345;
+        }
     </style>
 </head>
 <body>
