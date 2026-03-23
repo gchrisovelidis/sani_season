@@ -575,53 +575,58 @@ html_template = Template(
         }
 
         .temp-cold {
-            color: #3b82f6;
+            color: #2563EB;
+            font-weight: 800;
         }
 
         .temp-mild {
-            color: #2f3345;
+            color: #475569;
         }
 
         .temp-warm {
-            color: #d97706;
+            color: #F59E0B;
         }
 
         .temp-hot {
-            color: #c2410c;
+            color: #DC2626;
+            font-weight: 800;
         }
 
         .temp-unavailable {
-            color: #9aa3b2;
+            color: #9CA3AF;
         }
 
         .cond-clear {
-            color: #c97a00;
+            color: #F59E0B;
         }
 
         .cond-clouds {
-            color: #7b8798;
+            color: #7B8798;
         }
 
-        .cond-rain,
+        .cond-rain {
+            color: #2563EB;
+        }
+
         .cond-drizzle {
-            color: #3478c8;
+            color: #60A5FA;
         }
 
         .cond-thunderstorm {
-            color: #8b5cf6;
+            color: #6D28D9;
         }
 
         .cond-snow {
-            color: #4b8fdc;
+            color: #93C5FD;
         }
 
         .cond-mist {
-            color: #8a94a6;
+            color: #9CA3AF;
         }
 
         .cond-unavailable,
         .cond-default {
-            color: #8a94a6;
+            color: #9CA3AF;
         }
 
         .holiday-section,
@@ -643,56 +648,25 @@ html_template = Template(
         }
 
         .alert-normal {
-            color: #2f3345;
+            color: #2F3345;
         }
 
         .alert-warning {
-            color: #d97706;
+            color: #D97706;
         }
 
         .alert-danger {
-            color: #c2410c;
+            color: #C2410C;
         }
 
         .alert-weekend {
-            color: #2e8b57;
-        }
-
-        .label {
-            font-size: 18px;
-            color: #5f6675;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        .clock,
-        .countdown,
-        .days {
-            font-size: 70px;
-            font-weight: 700;
-            line-height: 1;
-            color: #2f3345;
-        }
-
-        .clock,
-        .countdown {
-            margin-bottom: 25px;
-        }
-
-        .days {
-            margin-bottom: 24px;
-        }
-
-        .center-progress {
-            width: 100%;
-            max-width: 520px;
-            margin: 0 auto;
+            color: #2E8B57;
         }
 
         .progress-bar {
             width: 100%;
             height: 14px;
-            background: #e8edf5;
+            background: #E8EDF5;
             border-radius: 999px;
             overflow: hidden;
             margin-bottom: 8px;
@@ -705,7 +679,7 @@ html_template = Template(
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #1f5fae 0%, #4a90e2 100%);
+            background: linear-gradient(90deg, #1F5FAE 0%, #4A90E2 100%);
             border-radius: 999px;
         }
 
