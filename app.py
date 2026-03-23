@@ -485,18 +485,16 @@ progress_bar = f"""
 # Left column cards
 # -----------------------
 holiday_name, holiday_date, holiday_days = get_next_holiday(today)
-holiday_alert_class = get_holiday_alert_class(holiday_days)
 
 holiday_html = ""
 if holiday_name is not None:
     holiday_html = f"""
     <div class="section info-section">
         <div class="section-title">Next Bank Holiday</div>
-        <div class="info-name {holiday_alert_class}">{holiday_name}</div>
-        <div class="info-days {holiday_alert_class}">{format_days_text(holiday_days)}</div>
+        <div class="info-name alert-weekend">{holiday_name}</div>
+        <div class="info-days alert-weekend">{format_days_text(holiday_days)}</div>
     </div>
     """
-
 weekend = get_weekend_indicator(today)
 
 weekend_html = f"""
