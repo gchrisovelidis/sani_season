@@ -68,33 +68,14 @@ BANK_HOLIDAYS = [
     (date(2026, 12, 26), "2η μέρα Χριστουγέννων"),
 ]
 
-STICKER_RULES = [
-    (20, "Sticker1.png"),
-    (40, "Sticker2.png"),
-    (60, "Sticker3.png"),
-    (80, "Sticker4.png"),
-    (100, "Sticker5.png"),
-]
-
 # -----------------------
 # Helpers
 # -----------------------
-def get_image_base64(path: str) -> str:
+def get_logo_base64(path: str) -> str:
     file_path = Path(path)
     if not file_path.exists():
         return ""
     return base64.b64encode(file_path.read_bytes()).decode()
-
-
-def get_logo_base64(path: str) -> str:
-    return get_image_base64(path)
-
-
-def get_progress_sticker_path(progress_pct: float) -> str:
-    for limit, path in STICKER_RULES:
-        if progress_pct <= limit:
-            return path
-    return STICKER_RULES[-1][1]
 
 
 def get_weather_icon_svg(weather: str) -> str:
@@ -399,17 +380,6 @@ total_days = (TARGET_DATE - SEASON_START).days
 elapsed_days = (today - SEASON_START).days
 progress = max(0, min(100, int((elapsed_days / total_days) * 100))) if total_days > 0 else 0
 
-sticker_path = get_progress_sticker_path(progress)
-sticker_b64 = get_image_base64(sticker_path)
-
-sticker_html = ""
-if sticker_b64:
-    sticker_html = f"""
-    <div class="progress-sticker-wrap">
-        <img src="data:image/png;base64,{sticker_b64}" alt="Progress Sticker" class="progress-sticker">
-    </div>
-    """
-
 progress_bar = f"""
 <div class="center-progress">
     <div class="label">Season Progress</div>
@@ -417,7 +387,6 @@ progress_bar = f"""
         <div class="progress-fill" style="width:{progress}%"></div>
     </div>
     <div class="progress-text">{progress}%</div>
-    {sticker_html}
 </div>
 """
 
@@ -720,21 +689,6 @@ html_template = Template(
             color: #2f3345;
         }
 
-        .progress-sticker-wrap {
-            text-align: center;
-            margin-top: 14px;
-        }
-
-        .progress-sticker {
-            width: 120px;
-            height: 120px;
-            object-fit: contain;
-            display: inline-block;
-            pointer-events: none;
-            user-select: none;
-            -webkit-user-drag: none;
-        }
-
         @media (max-width: 1100px) {
             .left {
                 width: 36%;
@@ -749,11 +703,6 @@ html_template = Template(
             .countdown,
             .days {
                 font-size: 56px;
-            }
-
-            .progress-sticker {
-                width: 105px;
-                height: 105px;
             }
         }
 
@@ -783,13 +732,7 @@ html_template = Template(
             .days {
                 font-size: 42px;
             }
-
-            .progress-sticker {
-                width: 95px;
-                height: 95px;
-            }
         }
-
         .label {
             font-size: 18px;
             color: #5F6675;
