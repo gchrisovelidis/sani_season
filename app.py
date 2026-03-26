@@ -78,6 +78,26 @@ STICKER_RULES = [
     (100, "sticker5"),
 ]
 
+RESORTS = {
+    "Sani Resort": [
+        ("Sani Beach", date(2026, 4, 2), date(2026, 10, 31)),
+        ("Porto Sani", date(2026, 4, 2), date(2026, 10, 31)),
+        ("Sani Dunes", date(2026, 4, 16), date(2026, 10, 31)),
+        ("Sani Club", date(2026, 4, 23), date(2026, 10, 31)),
+        ("Sani Asterias", date(2026, 4, 30), date(2026, 10, 31)),
+    ],
+    "Ikos Resorts": [
+        ("Ikos Oceania", date(2026, 3, 26), date(2026, 10, 31)),
+        ("Ikos Olivia", date(2026, 4, 2), date(2026, 10, 31)),
+        ("Ikos Dassia", date(2026, 4, 2), date(2026, 10, 31)),
+        ("Ikos Aria", date(2026, 4, 23), date(2026, 10, 31)),
+        ("Ikos Odisia", date(2026, 4, 23), date(2026, 10, 31)),
+        ("Ikos Kissamos", date(2026, 4, 30), date(2026, 10, 31)),
+        ("Ikos Andalusia", date(2026, 3, 26), date(2026, 11, 7)),
+        ("Ikos Porto Petro", date(2026, 4, 10), date(2026, 11, 7)),
+    ],
+}
+
 # -----------------------
 # Helpers
 # -----------------------
@@ -423,6 +443,76 @@ def get_sticker(progress: int) -> str:
             return stickers.get(key, "")
     return stickers.get("sticker5", "")
 
+def format_short_date(d: date) -> str:
+    return f"{d.day} {d.strftime('%b')}"
+
+
+def get_resort_status_and_progress(today_: date, opening_date: date, closing_date: date):
+    if today_ < opening_date:
+        return "Upcoming", 0, "status-upcoming"
+    if today_ > closing_date:
+        return "Closed", 100, "status-closed"
+
+    total_days = (closing_date - opening_date).days
+    elapsed_days = (today_ - opening_date).days
+
+    if total_days <= 0:
+        progress_pct = 100
+    else:
+        progress_pct = int((elapsed_days / total_days) * 100)
+        progress_pct = max(0, min(100, progress_pct))
+
+    return "Open", progress_pct, "status-open"
+
+
+def render_resort_progress_section(resorts_by_group: dict, today_: date) -> str:
+    groups_html = []
+
+    for group_name, resorts in resorts_by_group.items():
+        resort_rows = []
+
+        for resort_name, opening_date, closing_date in resorts:
+            status_text, progress_pct, status_class = get_resort_status_and_progress(
+                today_, opening_date, closing_date
+            )
+
+            date_range = f"{format_short_date(opening_date)} – {format_short_date(closing_date)}"
+
+            resort_rows.append(
+                f"""
+                <div class="resort-item">
+                    <div class="resort-top">
+                        <div class="resort-name">{resort_name}</div>
+                        <div class="resort-status {status_class}">{status_text}</div>
+                    </div>
+
+                    <div class="resort-dates">{date_range}</div>
+
+                    <div class="resort-progress-row">
+                        <div class="resort-progress-bar">
+                            <div class="resort-progress-fill {status_class}" style="width: {progress_pct}%"></div>
+                        </div>
+                        <div class="resort-progress-text">{progress_pct}%</div>
+                    </div>
+                </div>
+                """
+            )
+
+        groups_html.append(
+            f"""
+            <div class="resort-group">
+                <div class="resort-group-title">{group_name}</div>
+                {''.join(resort_rows)}
+            </div>
+            """
+        )
+
+    return f"""
+    <div class="section resort-section">
+        <div class="section-title">Resort Season Progress</div>
+        {''.join(groups_html)}
+    </div>
+    """
 # -----------------------
 # Toggle + theme
 # -----------------------
@@ -515,8 +605,8 @@ duetto_alert_class = get_holiday_alert_class(duetto_days_remaining)
 duetto_html = f"""
 <div class="section info-section">
     <div class="section-title">Duetto goes live</div>
-    <div class="info-name alert-danger">5 May</div>
-    <div class="info-days alert-danger">{format_days_text(duetto_days_remaining)}</div>
+    <div class="info-name {duetto_alert_class}">5 May</div>
+    <div class="info-days {duetto_alert_class}">{format_days_text(duetto_days_remaining)}</div>
 </div>
 """
 
@@ -526,6 +616,8 @@ ecommerce_html = """
     <div class="info-name alert-normal">Unknown</div>
 </div>
 """
+
+resort_progress_html = render_resort_progress_section(RESORTS, today)
 
 # -----------------------
 # Logo
@@ -562,7 +654,8 @@ html_template = Template(
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             background: $bg;
             font-family: 'Inter', Arial, Helvetica, sans-serif;
             color: $text;
@@ -571,8 +664,9 @@ html_template = Template(
         .page {
             display: flex;
             width: 100%;
-            height: 100vh;
+            min-height: 100vh;
             background: $bg;
+            align-items: flex-start;
         }
 
         .left {
@@ -602,6 +696,8 @@ html_template = Template(
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
+            max-height: 100vh;
+            overflow-y: auto;
         }
 
         .content {
@@ -893,6 +989,118 @@ html_template = Template(
                 height: 95px;
             }
         }
+        .resort-section {
+            margin-top: 2px;
+        }
+
+        .resort-group {
+            margin-bottom: 16px;
+        }
+
+        .resort-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .resort-group-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: $section_title;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 10px;
+        }
+
+        .resort-item {
+            margin-bottom: 12px;
+        }
+
+        .resort-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .resort-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 3px;
+        }
+
+        .resort-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: $text;
+            line-height: 1.2;
+        }
+
+        .resort-status {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .status-upcoming {
+            color: #D97706;
+            background: rgba(217, 119, 6, 0.12);
+        }
+
+        .status-open {
+            color: #15803D;
+            background: rgba(21, 128, 61, 0.12);
+        }
+
+        .status-closed {
+            color: #6B7280;
+            background: rgba(107, 114, 128, 0.12);
+        }
+
+        .resort-dates {
+            font-size: 12px;
+            color: $muted;
+            margin-bottom: 6px;
+        }
+
+        .resort-progress-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .resort-progress-bar {
+            flex: 1;
+            height: 8px;
+            background: $progress_bg;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .resort-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.6s ease;
+        }
+
+        .resort-progress-fill.status-upcoming {
+            background: #F59E0B;
+        }
+
+        .resort-progress-fill.status-open {
+            background: linear-gradient(90deg, #16A34A 0%, #22C55E 100%);
+        }
+
+        .resort-progress-fill.status-closed {
+            background: #9CA3AF;
+        }
+
+        .resort-progress-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: $text;
+            min-width: 34px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -942,6 +1150,10 @@ html_template = Template(
             <div class="section-divider"></div>
 
             $ecommerce_html
+
+            <div class="section-divider"></div>
+
+            $resort_progress_html
         </div>
     </div>
 
@@ -1057,6 +1269,7 @@ html = html_template.substitute(
     progress_fill_1=theme["progress_fill_1"],
     progress_fill_2=theme["progress_fill_2"],
     logo_shadow=theme["logo_shadow"],
+    resort_progress_html=resort_progress_html,
 )
 
-components.html(html, height=760, scrolling=False)
+components.html(html, height=980, scrolling=False)

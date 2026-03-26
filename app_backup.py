@@ -71,11 +71,11 @@ BANK_HOLIDAYS = [
 ]
 
 STICKER_RULES = [
-    (20, "Sticker1.png"),
-    (40, "Sticker2.png"),
-    (60, "Sticker3.png"),
-    (80, "Sticker4.png"),
-    (100, "Sticker5.png"),
+    (20, "sticker1"),
+    (40, "sticker2"),
+    (60, "sticker3"),
+    (80, "sticker4"),
+    (100, "sticker5"),
 ]
 
 # -----------------------
@@ -90,14 +90,6 @@ def get_image_base64(path: str) -> str:
 
 def get_logo_base64(path: str) -> str:
     return get_image_base64(path)
-
-
-def get_progress_sticker_path(progress_pct: float) -> str:
-    for limit, path in STICKER_RULES:
-        if progress_pct <= limit:
-            return path
-    return STICKER_RULES[-1][1]
-
 
 def get_weather_icon_svg(weather: str) -> str:
     weather = (weather or "").strip()
@@ -416,6 +408,20 @@ def format_days_text(days_value: int) -> str:
         return "1 day"
     return f"{days_value} days"
 
+def render_sticker(base64_string: str, width: int = 120) -> str:
+    return f"""
+    <div class="progress-sticker-wrap">
+        <img src="data:image/png;base64,{base64_string}" alt="Progress Sticker" class="progress-sticker">
+    </div>
+    """
+
+
+def get_sticker(progress: int) -> str:
+    stickers = st.secrets.get("stickers", {})
+    for limit, key in STICKER_RULES:
+        if progress <= limit:
+            return stickers.get(key, "")
+    return stickers.get("sticker5", "")
 
 # -----------------------
 # Toggle + theme
@@ -459,16 +465,11 @@ total_days = (TARGET_DATE - SEASON_START).days
 elapsed_days = (today - SEASON_START).days
 progress = max(0, min(100, int((elapsed_days / total_days) * 100))) if total_days > 0 else 0
 
-sticker_path = get_progress_sticker_path(progress)
-sticker_b64 = get_image_base64(sticker_path)
+sticker_b64 = get_sticker(progress)
 
 sticker_html = ""
 if sticker_b64:
-    sticker_html = f"""
-    <div class="progress-sticker-wrap">
-        <img src="data:image/png;base64,{sticker_b64}" alt="Progress Sticker" class="progress-sticker">
-    </div>
-    """
+    sticker_html = render_sticker(sticker_b64)
 
 progress_bar = f"""
 <div class="center-progress">
