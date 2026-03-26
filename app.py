@@ -417,10 +417,11 @@ def render_sticker(base64_string: str, width: int = 120) -> str:
 
 
 def get_sticker(progress: int) -> str:
+    stickers = st.secrets.get("stickers", {})
     for limit, key in STICKER_RULES:
         if progress <= limit:
-            return st.secrets["stickers"].get(key, "")
-    return st.secrets["stickers"].get("sticker5", "")
+            return stickers.get(key, "")
+    return stickers.get("sticker5", "")
 
 # -----------------------
 # Toggle + theme
