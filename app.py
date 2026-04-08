@@ -1129,7 +1129,6 @@ html_template = Template(
 
         <div class="middle">
             <div class="content">
-                $logo_html
                 <div class="label">Current time</div>
                 <div class="clock" id="live-clock">$current_time_text</div>
 
