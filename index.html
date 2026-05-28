@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sani Season</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    
+    /* ──────────────────────────────────────────
+       SECTION COMPONENTS
+    ────────────────────────────────────────── */
+    .section { margin-bottom: 18px; }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--section-title);
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      margin-bottom: 12px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 14px 0 16px;
+    }
+
+    /* ──────────────────────────────────────────
+       WEATHER ROWS
+    ────────────────────────────────────────── */
+    .weather-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .weather-city {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .weather-cond {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 2px;
+      color: var(--muted);
+    }
+    .weather-cond svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .weather-temp {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+      white-space: nowrap;
+    }
+    .temp-cold    { color: var(--temp-cold); }
+    .temp-mild    { color: var(--temp-mild); }
+    .temp-warm    { color: var(--temp-warm); }
+    .temp-hot     { color: var(--temp-hot); font-weight: 800; }
+    .temp-na      { color: var(--temp-na); }
+    .cond-clear   { color: var(--cond-clear) !important; }
+    .cond-cloud   { color: var(--cond-cloud) !important; }
+    .cond-rain    { color: var(--cond-rain) !important; }
+    .cond-drizzle { color: var(--cond-drizzle) !important; }
+    .cond-thunder { color: var(--cond-thunder) !important; }
+    .cond-snow    { color: var(--cond-snow) !important; }
+    .cond-mist    { color: var(--cond-mist) !important; }
+
+    /* ──────────────────────────────────────────
+       INFO CARDS (holiday / weekend / duetto)
+    ────────────────────────────────────────── */
+    .info-section {}
+    .info-name {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .info-days {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+    }
+    .c-normal  { color: var(--text); }
+    .c-warn    { color: var(--warn); }
+    .c-danger  { color: var(--danger); }
+    .c-weekend { color: var(--weekend); }
+    .c-success { color: var(--success); }
+
+    /* ──────────────────────────────────────────
+       CENTRE COLUMN
+    ────────────────────────────────────────── */
+    .mid-content {
+      text-align: center;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .logo {
+      margin-bottom: 20px;
+      min-height: 40px;
+    }
+    .logo img {
+      width: 200px;
+      max-width: 55vw;
+      height: auto;
+      pointer-events: none;
+      user-select: none;
+    }
+    .logo-placeholder {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .mid-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--label);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+
+    .clock, .countdown, .days-big {
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+      line-height: 1;
+      color: var(--text);
+    }
+    .clock      { font-size: 68px; margin-bottom: 28px; }
+    .countdown  { font-size: 62px; margin-bottom: 28px; }
+    .days-big   { font-size: 68px; margin-bottom: 22px; }
+
+    @media (max-width: 1200px) {
+      .clock, .countdown, .days-big { font-size: 50px; }
+    }
+
+    /* ──────────────────────────────────────────
+       SEASON PROGRESS (centre)
+    ────────────────────────────────────────── */
+    .season-progress { margin-top: 4px; }
+    .prog-bar {
+      width: 100%;
+      height: 12px;
+      background: var(--progress-bg);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 8px 0 6px;
+    }
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--progress-1) 0%, var(--progress-2) 100%);
+      border-radius: 999px;
+      transition: width 0.7s ease;
+    }
+    .prog-pct {
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+      color: var(--text);
+    }
+
+    /* ──────────────────────────────────────────
+       RESORT SECTION (right col)
+    ────────────────────────────────────────── */
+    .resort-group { margin-bottom: 18px; }
+    .resort-group-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--section-title);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+    .resort-item { margin-bottom: 10px; }
+    .resort-item:last-child { margin-bottom: 0; }
+    .resort-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .resort-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .resort-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .badge-upcoming { color: var(--upcoming);  background: var(--upcoming-bg); }
+    .badge-open     { color: var(--open-c);    background: var(--open-bg); }
+    .badge-closed   { color: var(--closed-c);  background: var(--closed-bg); }
+
+    .resort-dates {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .resort-prog-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .resort-prog-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--progress-bg);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .resort-prog-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+    .fill-upcoming { background: #F59E0B; }
+    .fill-open     { background: linear-gradient(90deg, #16A34A, #22C55E); }
+    .fill-closed   { background: #9CA3AF; }
+
+    .resort-prog-pct {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      min-width: 34px;
+      text-align: right;
+    }
+
+    /* ──────────────────────────────────────────
+       RESPONSIVE
+    ────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .page { flex-direction: column; }
+      .col-left, .col-mid, .col-right {
+        width: 100% !important;
+        min-width: 0 !important;
+        border: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      .col-left  { border-bottom: 1px solid var(--border) !important; }
+      .col-mid   { border-bottom: 1px solid var(--border) !important; padding: 24px; }
+      .clock, .countdown, .days-big { font-size: 40px; }
+      .theme-toggle { top: 10px; right: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- DARK MODE TOGGLE -->
+<button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+  <span class="icon">🌙</span><span id="theme-label">Dark</span>
+</button>
+
+<div class="page">
+
+  <!-- ─── LEFT COLUMN ─── -->
+  <div class="col col-left">
+
+    <div class="section">
+      <div class="section-title">Weather · Offices</div>
+      <div id="weather-offices"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section">
+      <div class="section-title">Weather · Properties</div>
+      <div id="weather-properties"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section info-section" id="holiday-section"></div>
+
+    <div class="divider"></div>
+
+    <div class="section info-section" id="weekend-section"></div>
+
+  </div>
+
+  <!-- ─── MIDDLE COLUMN ─── -->
+  <div class="col col-mid">
+    <div class="mid-content">
+
+      <div class="logo" id="logo-wrap">
+        <div class="logo-placeholder">⛱ Sani Season</div>
+      </div>
+
+      <div class="mid-label">Current time</div>
+      <div class="clock" id="live-clock">--:--</div>
+
+      <div id="countdown-wrap" style="display:none;">
+        <div class="mid-label">Time until 17:30</div>
+        <div class="countdown" id="live-countdown">0h 00m</div>
+      </div>
+
+      <div class="mid-label">Days until 7 November 2026</div>
+      <div class="days-big" id="days-remaining">—</div>
+
+      <div class="season-progress">
+        <div class="mid-label">Season Progress</div>
+        <div class="prog-bar"><div class="prog-fill" id="season-fill" style="width:0%"></div></div>
+        <div class="prog-pct" id="season-pct">0%</div>
+        <div id="season-sticker" style="text-align:center;margin-top:14px;display:none;"><img id="sticker-img" style="width:120px;height:120px;object-fit:contain;pointer-events:none;user-select:none;" alt=""></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── RIGHT COLUMN ─── -->
+  <div class="col col-right">
+
+    <div class="section info-section" id="duetto-section"></div>
+
+    <div class="divider"></div>
+
+    <div class="section info-section">
+      <div class="section-title">E-commerce goes offline</div>
+      <div class="info-name c-normal">Unknown</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="resort-section"></div>
+
+  </div>
+</div>
+
+<script src="stickers.js"></script>
+<script>
+// ═══════════════════════════════════════════
+//  STICKER DATA — loaded from stickers.js
+//  Rules: ≤20% → sticker1, ≤40% → sticker2, ≤60% → sticker3, ≤80% → sticker4, else → sticker5
+//  STICKERS object is defined in stickers.js (keep it in the same folder)
+// ═══════════════════════════════════════════
+
+// ═══════════════════════════════════════════
+//  CONFIG — edit these to match your data
+// ═══════════════════════════════════════════
+const CONFIG = {
+  TARGET_DATE:      '2026-11-07',
+  SEASON_START:     '2026-03-26',
+  DUETTO_LIVE_DATE: '2026-05-05',
+  WORK_START: { h: 9,  m: 0 },
+  WORK_END:   { h: 17, m: 30 },
+  TIMEZONE:   'Europe/Athens',
+};
+
+const OFFICE_LOCATIONS = {
+  'Thessaloniki': 'Thessaloniki,GR',
+};
+
+const PROPERTY_LOCATIONS = {
+  'Halkidiki': 'Polygyros,GR',
+  'Corfu':     'Kerkyra,GR',
+  'Kos':       'Kos,GR',
+  'Crete':     'Heraklion,GR',
+  'Marbella':  'Marbella,ES',
+  'Mallorca':  'Palma,ES',
+};
+
+const BANK_HOLIDAYS = [
+  { date: '2026-01-01', name: "New Year's Day" },
+  { date: '2026-01-06', name: 'Θεοφάνεια' },
+  { date: '2026-02-23', name: 'Καθαρά Δευτέρα' },
+  { date: '2026-03-25', name: '25η Μαρτίου' },
+  { date: '2026-04-13', name: 'Δευτέρα του Πάσχα' },
+  { date: '2026-05-01', name: 'Πρωτομαγιά' },
+  { date: '2026-08-15', name: 'Κοίμηση της Θεοτόκου' },
+  { date: '2026-10-28', name: '28η Οκτωβρίου' },
+  { date: '2026-12-25', name: 'Χριστούγεννα' },
+  { date: '2026-12-26', name: '2η μέρα Χριστουγέννων' },
+];
+
+const RESORTS = {
+  'Sani Resort': [
+    { name: 'Sani Beach',    open: '2026-04-02', close: '2026-10-31' },
+    { name: 'Porto Sani',    open: '2026-04-02', close: '2026-10-31' },
+    { name: 'Sani Dunes',    open: '2026-04-16', close: '2026-10-31' },
+    { name: 'Sani Club',     open: '2026-04-23', close: '2026-10-31' },
+    { name: 'Sani Asterias', open: '2026-04-30', close: '2026-10-31' },
+  ],
+  'Ikos Resorts': [
+    { name: 'Ikos Oceania',    open: '2026-03-26', close: '2026-10-31' },
+    { name: 'Ikos Olivia',     open: '2026-04-02', close: '2026-10-31' },
+    { name: 'Ikos Dassia',     open: '2026-04-02', close: '2026-10-31' },
+    { name: 'Ikos Aria',       open: '2026-04-23', close: '2026-10-31' },
+    { name: 'Ikos Odisia',     open: '2026-04-23', close: '2026-10-31' },
+    { name: 'Ikos Kissamos',   open: '2026-04-30', close: '2026-10-31' },
+    { name: 'Ikos Andalusia',  open: '2026-03-26', close: '2026-11-07' },
+    { name: 'Ikos Porto Petro',open: '2026-04-10', close: '2026-11-07' },
+  ],
+};
+
+// ═══════════════════════════════════════════
+//  HELPERS — DATE
+// ═══════════════════════════════════════════
+function getAthensNow() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: CONFIG.TIMEZONE }));
+}
+
+function toDateObj(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function fmtShortDate(str) {
+  const d = toDateObj(str);
+  return d.getDate() + ' ' + d.toLocaleString('en-GB', { month: 'short' });
+}
+
+function todayLocal() {
+  const n = getAthensNow();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+}
+
+function diffDays(d1, d2) {
+  return Math.round((d2 - d1) / 86400000);
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS — WEATHER ICONS (inline SVG)
+// ═══════════════════════════════════════════
+const WEATHER_ICONS = {
+  Clear: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" fill="#F5B301"/><g stroke="#F5B301" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="2.5" x2="12" y2="5.2"/><line x1="12" y1="18.8" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="5.2" y2="12"/><line x1="18.8" y1="12" x2="21.5" y2="12"/><line x1="5.2" y1="5.2" x2="7.1" y2="7.1"/><line x1="16.9" y1="16.9" x2="18.8" y2="18.8"/><line x1="16.9" y1="7.1" x2="18.8" y2="5.2"/><line x1="5.2" y1="18.8" x2="7.1" y2="16.9"/></g></svg>`,
+  Clouds: `<svg viewBox="0 0 24 24"><ellipse cx="10" cy="13.2" rx="5.2" ry="3.4" fill="#C8D0DF"/><ellipse cx="14.8" cy="12.8" rx="4.5" ry="3.1" fill="#B5C0D3"/><ellipse cx="7.2" cy="14.1" rx="3.2" ry="2.5" fill="#D6DDE9"/></svg>`,
+  Rain: `<svg viewBox="0 0 24 24"><ellipse cx="10" cy="10.8" rx="5.2" ry="3.4" fill="#C8D0DF"/><ellipse cx="14.8" cy="10.4" rx="4.5" ry="3.1" fill="#B5C0D3"/><g stroke="#4A90E2" stroke-width="1.8" stroke-linecap="round"><line x1="8" y1="15.2" x2="6.8" y2="18.2"/><line x1="12" y1="15.2" x2="10.8" y2="18.2"/><line x1="16" y1="15.2" x2="14.8" y2="18.2"/></g></svg>`,
+  Drizzle: `<svg viewBox="0 0 24 24"><ellipse cx="10" cy="10.8" rx="5.2" ry="3.4" fill="#C8D0DF"/><ellipse cx="14.8" cy="10.4" rx="4.5" ry="3.1" fill="#B5C0D3"/><g stroke="#67A7EF" stroke-width="1.5" stroke-linecap="round"><line x1="9" y1="15.5" x2="8.2" y2="17.4"/><line x1="13" y1="15.5" x2="12.2" y2="17.4"/><line x1="17" y1="15.5" x2="16.2" y2="17.4"/></g></svg>`,
+  Thunderstorm: `<svg viewBox="0 0 24 24"><ellipse cx="10" cy="10.8" rx="5.2" ry="3.4" fill="#C8D0DF"/><ellipse cx="14.8" cy="10.4" rx="4.5" ry="3.1" fill="#B5C0D3"/><polygon points="12,14.4 9.5,18.6 12.4,18.6 10.8,21.4 15.2,16.6 12.4,16.6 14,14.4" fill="#F5B301"/></svg>`,
+  Snow: `<svg viewBox="0 0 24 24"><ellipse cx="10" cy="10.8" rx="5.2" ry="3.4" fill="#C8D0DF"/><ellipse cx="14.8" cy="10.4" rx="4.5" ry="3.1" fill="#B5C0D3"/><g stroke="#7FB7FF" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="15.4" x2="8" y2="18.2"/><line x1="6.6" y1="16.8" x2="9.4" y2="16.8"/><line x1="12.5" y1="15.4" x2="12.5" y2="18.2"/><line x1="11.1" y1="16.8" x2="13.9" y2="16.8"/><line x1="16.5" y1="15.4" x2="16.5" y2="18.2"/><line x1="15.1" y1="16.8" x2="17.9" y2="16.8"/></g></svg>`,
+  Mist: `<svg viewBox="0 0 24 24"><g stroke="#B8C2D1" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="8" x2="19" y2="8"/><line x1="3.5" y1="12" x2="17.5" y2="12"/><line x1="6.5" y1="16" x2="20.5" y2="16"/></g></svg>`,
+  Unavailable: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="#D3D8E2"/></svg>`,
+};
+
+const COND_CLASS = {
+  clear: 'cond-clear', clouds: 'cond-cloud', rain: 'cond-rain',
+  drizzle: 'cond-drizzle', thunderstorm: 'cond-thunder',
+  snow: 'cond-snow', mist: 'cond-mist', fog: 'cond-mist', haze: 'cond-mist',
+};
+
+function iconFor(w) { return WEATHER_ICONS[w] || WEATHER_ICONS.Unavailable; }
+function condClass(w) { return COND_CLASS[(w||'').toLowerCase()] || 'cond-cloud'; }
+
+function tempClass(t) {
+  if (t === null) return 'temp-na';
+  if (t <= 10) return 'temp-cold';
+  if (t <= 19) return 'temp-mild';
+  if (t <= 27) return 'temp-warm';
+  return 'temp-hot';
+}
+
+// ═══════════════════════════════════════════
+//  WEATHER FETCH + RENDER
+// ═══════════════════════════════════════════
+const weatherCache = {};
+
+async function fetchWeather(query) {
+  if (weatherCache[query]) return weatherCache[query];
+  const key = 'd805d1b72732447e104093c3559d7f13';
+
+  try {
+    const r = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&appid=${key}&units=metric`);
+    const d = await r.json();
+    if (d.cod !== 200) return null;
+    const result = { temp: Math.round(d.main.temp), weather: d.weather[0].main };
+    weatherCache[query] = result;
+    return result;
+  } catch { return null; }
+}
+
+function weatherRowHTML(label, data) {
+  if (!data) {
+    return `<div class="weather-row">
+      <div>
+        <div class="weather-city">${label}</div>
+        <div class="weather-cond cond-mist">${iconFor('Unavailable')}<span>Unavailable</span></div>
+      </div>
+      <div class="weather-temp temp-na">—</div>
+    </div>`;
+  }
+  const cc = condClass(data.weather);
+  const tc = tempClass(data.temp);
+  return `<div class="weather-row">
+    <div>
+      <div class="weather-city">${label}</div>
+      <div class="weather-cond ${cc}">${iconFor(data.weather)}<span>${data.weather}</span></div>
+    </div>
+    <div class="weather-temp ${tc}">${data.temp}°C</div>
+  </div>`;
+}
+
+async function renderWeather(locations, containerId) {
+  const el = document.getElementById(containerId);
+  // Show placeholder rows immediately
+  el.innerHTML = Object.keys(locations).map(l => weatherRowHTML(l, null)).join('');
+  // Fetch and update each row
+  for (const [label, query] of Object.entries(locations)) {
+    const data = await fetchWeather(query);
+    const rows = el.querySelectorAll('.weather-row');
+    const idx = Object.keys(locations).indexOf(label);
+    if (rows[idx]) rows[idx].outerHTML = weatherRowHTML(label, data);
+    // re-query after replacing
+    const updated = el.querySelectorAll('.weather-row');
+    if (updated[idx]) updated[idx].outerHTML = weatherRowHTML(label, data);
+  }
+  // Full re-render after all fetches
+  const allData = {};
+  for (const [label, query] of Object.entries(locations)) {
+    allData[label] = await Promise.resolve(weatherCache[query] || null);
+  }
+  el.innerHTML = Object.entries(allData).map(([l, d]) => weatherRowHTML(l, d)).join('');
+}
+
+async function loadAllWeather() {
+  await Promise.all([
+    renderWeather(OFFICE_LOCATIONS, 'weather-offices'),
+    renderWeather(PROPERTY_LOCATIONS, 'weather-properties'),
+  ]);
+}
+
+// ═══════════════════════════════════════════
+//  STATIC SECTIONS
+// ═══════════════════════════════════════════
+function alertClass(days) {
+  if (days < 3) return 'c-danger';
+  if (days <= 7) return 'c-warn';
+  return 'c-normal';
+}
+
+function formatDays(n) {
+  if (n < 0) return 'Live';
+  if (n === 0) return 'Today';
+  if (n === 1) return '1 day';
+  return `${n} days`;
+}
+
+function renderHoliday(today) {
+  const upcoming = BANK_HOLIDAYS
+    .map(h => ({ ...h, d: toDateObj(h.date) }))
+    .filter(h => h.d >= today)
+    .sort((a, b) => a.d - b.d);
+
+  const el = document.getElementById('holiday-section');
+  if (!upcoming.length) { el.innerHTML = ''; return; }
+
+  const next = upcoming[0];
+  const days = diffDays(today, next.d);
+  const cls = alertClass(days);
+  el.innerHTML = `
+    <div class="section-title">Next Bank Holiday</div>
+    <div class="info-name c-weekend">${next.name}</div>
+    <div class="info-days c-weekend">${formatDays(days)}</div>
+  `;
+}
+
+function renderWeekend(today) {
+  const wd = today.getDay(); // 0=Sun,6=Sat
+  const el = document.getElementById('weekend-section');
+  let name, daysText, cls;
+
+  if (wd === 0 || wd === 6) {
+    name = 'Weekend'; daysText = 'Today'; cls = 'c-weekend';
+  } else {
+    const toSat = 6 - wd;
+    name = 'Next weekend';
+    daysText = toSat === 1 ? 'Tomorrow' : `${toSat} days`;
+    cls = toSat === 1 ? 'c-warn' : 'c-normal';
+  }
+
+  el.innerHTML = `
+    <div class="section-title">Weekend Indicator</div>
+    <div class="info-name ${cls}">${name}</div>
+    <div class="info-days ${cls}">${daysText}</div>
+  `;
+}
+
+function renderDuetto(today) {
+  const duetto = toDateObj(CONFIG.DUETTO_LIVE_DATE);
+  const days = diffDays(today, duetto);
+  const cls = alertClass(days);
+  document.getElementById('duetto-section').innerHTML = `
+    <div class="section-title">Duetto goes live</div>
+    <div class="info-name ${cls}">5 May</div>
+    <div class="info-days ${cls}">${formatDays(days)}</div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+//  RESORT PROGRESS
+// ═══════════════════════════════════════════
+function resortStatus(today, openStr, closeStr) {
+  const o = toDateObj(openStr), c = toDateObj(closeStr);
+  if (today < o) return { status: 'Upcoming', pct: 0, cls: 'upcoming' };
+  if (today > c) return { status: 'Closed',   pct: 100, cls: 'closed' };
+  const total = diffDays(o, c);
+  const elapsed = diffDays(o, today);
+  const pct = total > 0 ? Math.min(100, Math.max(0, Math.round((elapsed / total) * 100))) : 100;
+  return { status: 'Open', pct, cls: 'open' };
+}
+
+function renderResorts(today) {
+  const el = document.getElementById('resort-section');
+  let html = '<div class="section-title">Resort Season Progress</div>';
+
+  for (const [group, resorts] of Object.entries(RESORTS)) {
+    html += `<div class="resort-group"><div class="resort-group-title">${group}</div>`;
+    for (const r of resorts) {
+      const { status, pct, cls } = resortStatus(today, r.open, r.close);
+      html += `
+        <div class="resort-item">
+          <div class="resort-top">
+            <div class="resort-name">${r.name}</div>
+            <div class="resort-badge badge-${cls}">${status}</div>
+          </div>
+          <div class="resort-dates">${fmtShortDate(r.open)} – ${fmtShortDate(r.close)}</div>
+          <div class="resort-prog-row">
+            <div class="resort-prog-bar">
+              <div class="resort-prog-fill fill-${cls}" style="width:${pct}%"></div>
+            </div>
+            <div class="resort-prog-pct">${pct}%</div>
+          </div>
+        </div>`;
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+//  SEASON PROGRESS (centre)
+// ═══════════════════════════════════════════
+function renderSeasonProgress(today) {
+  const start  = toDateObj(CONFIG.SEASON_START);
+  const target = toDateObj(CONFIG.TARGET_DATE);
+  const total   = diffDays(start, target);
+  const elapsed = diffDays(start, today);
+  const pct = total > 0 ? Math.min(100, Math.max(0, Math.round((elapsed / total) * 100))) : 0;
+
+  document.getElementById('season-fill').style.width = pct + '%';
+  document.getElementById('season-pct').textContent   = pct + '%';
+
+  // Show sticker based on progress
+  const stickerWrap = document.getElementById('season-sticker');
+  const stickerImg  = document.getElementById('sticker-img');
+  let key = null;
+  if      (pct <= 20)  key = 'sticker1';
+  else if (pct <= 40)  key = 'sticker2';
+  else if (pct <= 60)  key = 'sticker3';
+  else if (pct <= 80)  key = 'sticker4';
+  else                 key = 'sticker5';
+
+  const b64 = STICKERS[key];
+  if (b64 && stickerImg && stickerWrap) {
+    stickerImg.src = 'data:image/png;base64,' + b64;
+    stickerWrap.style.display = 'block';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  LIVE CLOCK + COUNTDOWN + DAYS
+// ═══════════════════════════════════════════
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function updateLive() {
+  const now    = getAthensNow();
+  const h      = now.getHours(), m = now.getMinutes();
+  const today  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = toDateObj(CONFIG.TARGET_DATE);
+
+  // Clock
+  document.getElementById('live-clock').textContent = `${pad2(h)}:${pad2(m)}`;
+
+  // Days remaining
+  const daysLeft = diffDays(today, target);
+  document.getElementById('days-remaining').textContent =
+    daysLeft > 0 ? `${daysLeft} days` : daysLeft === 0 ? 'Today' : 'Done';
+
+  // Countdown (work hours only)
+  const { h: sh, m: sm } = CONFIG.WORK_START;
+  const { h: eh, m: em } = CONFIG.WORK_END;
+  const inWork = (h > sh || (h === sh && m >= sm)) && (h < eh || (h === eh && m <= em));
+  const wrap = document.getElementById('countdown-wrap');
+
+  if (inWork) {
+    const endMins = eh * 60 + em;
+    const nowMins = h * 60 + m;
+    const rem     = endMins - nowMins;
+    const rh = Math.floor(rem / 60), rm = rem % 60;
+    document.getElementById('live-countdown').textContent = `${rh}h ${pad2(rm)}m`;
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  THEME TOGGLE
+// ═══════════════════════════════════════════
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('theme-btn').querySelector('.icon').textContent = dark ? '☀️' : '🌙';
+  document.getElementById('theme-label').textContent = dark ? 'Light' : 'Dark';
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyTheme(!isDark);
+}
+
+// ═══════════════════════════════════════════
+//  API KEY BANNER
+// ═══════════════════════════════════════════
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+(function init() {
+  // Theme
+  const saved = localStorage.getItem('theme');
+  applyTheme(saved === 'dark');
+
+  // Static sections (date-based)
+  const today = todayLocal();
+  renderHoliday(today);
+  renderWeekend(today);
+  renderDuetto(today);
+  renderResorts(today);
+  renderSeasonProgress(today);
+
+  // Live ticker
+  updateLive();
+  setInterval(updateLive, 30000); // every 30s is enough (minute precision)
+
+  // Weather (async)
+  loadAllWeather();
+})();
+</script>
+</body>
+</html>
