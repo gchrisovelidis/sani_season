@@ -789,8 +789,12 @@ function updateLive() {
   const inWork = (h > sh || (h === sh && m >= sm)) && (h < eh || (h === eh && m <= em));
   const wrap = document.getElementById('countdown-wrap');
   if (inWork) {
-    const rem = (eh * 60 + em) - (h * 60 + m);
-    document.getElementById('live-countdown').textContent = `${Math.floor(rem/60)}h ${pad2(rem%60)}m`;
+    const s        = now.getSeconds();
+    const totalSec = ((eh * 60 + em) - (h * 60 + m)) * 60 - s;
+    const rh = Math.floor(totalSec / 3600);
+    const rm = Math.floor((totalSec % 3600) / 60);
+    const rs = totalSec % 60;
+    document.getElementById('live-countdown').textContent = `${rh}h ${pad2(rm)}m ${pad2(rs)}s`;
     wrap.style.display = 'block';
   } else {
     wrap.style.display = 'none';
@@ -806,7 +810,7 @@ function updateLive() {
   renderResorts(today);
   renderSeasonProgress(today);
   updateLive();
-  setInterval(updateLive, 30000);
+  setInterval(updateLive, 1000);
   loadAllWeather();
 })();
 </script>
