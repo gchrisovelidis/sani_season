@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Season</title>
+  <title>Sani Season</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛱</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -90,13 +91,11 @@
     }
 
     .col-right {
-      width: 27%;
-      min-width: 255px;
       background: var(--surface);
       border-left: 1px solid var(--border);
-      flex-shrink: 0;
       overflow-y: auto;
       max-height: 100vh;
+      width: 100%;
     }
 
     /* ── SECTION CHROME ── */
@@ -349,18 +348,61 @@
       text-align: right;
     }
 
+    /* ── STICKER ── */
+    .sticker-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--border);
+      display: inline-block;
+      margin-top: 16px;
+      box-shadow: 0 2px 12px rgba(24,34,58,0.10);
+    }
+    .sticker-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+      display: block;
+    }
+
+    /* ── RIGHT COL SCROLL FADE ── */
+    .col-right-wrap {
+      position: relative;
+      width: 27%;
+      min-width: 255px;
+      flex-shrink: 0;
+    }
+    .col-right-wrap::after {
+      content: '';
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      display: block;
+      background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.97) 100%);
+      pointer-events: none;
+      flex-shrink: 0;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       .page { flex-direction: column; }
-      .col-left, .col-right {
+      .col-left, .col-right-wrap {
         width: 100% !important;
         min-width: 0 !important;
+      }
+      .col-right {
         border: none !important;
         max-height: none !important;
         overflow: visible !important;
       }
-      .col-left  { border-bottom: 1px solid var(--border) !important; }
-      .col-right { border-top:    1px solid var(--border) !important; }
+      .col-right-wrap::after { display: none; }
+      .col-left  { border-bottom: 1px solid var(--border) !important; border-right: none !important; }
+      .col-right { border-top:    1px solid var(--border) !important; border-left: none !important; }
       .col-mid   { padding: 28px 20px; }
       .clock, .countdown, .days-big { font-size: 38px; }
     }
@@ -414,8 +456,8 @@
         <div class="mid-label">Season Progress</div>
         <div class="prog-bar"><div class="prog-fill" id="season-fill" style="width:0%"></div></div>
         <div class="prog-pct" id="season-pct">0%</div>
-        <div id="season-sticker" style="text-align:center;margin-top:16px;display:none;">
-          <img id="sticker-img" style="width:120px;height:120px;object-fit:contain;pointer-events:none;user-select:none;" alt="">
+        <div id="season-sticker" style="text-align:center;display:none;">
+          <div class="sticker-circle"><img id="sticker-img" alt=""></div>
         </div>
       </div>
 
@@ -423,6 +465,7 @@
   </div>
 
   <!-- RIGHT -->
+  <div class="col-right-wrap">
   <div class="col col-right">
 
     <div id="duetto-section"></div>
@@ -438,6 +481,7 @@
 
     <div id="resort-section"></div>
 
+  </div>
   </div>
 </div>
 
